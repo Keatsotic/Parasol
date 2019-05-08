@@ -11,6 +11,9 @@ namespace Parasol
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+
+		private Texture2D _image;
+		private Vector2 _position;
         
         public Game1()
         {
@@ -26,7 +29,7 @@ namespace Parasol
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
+			// TODO: Add your initialization logic here
 
             base.Initialize();
         }
@@ -40,8 +43,11 @@ namespace Parasol
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
-        }
+			_image = Content.Load<Texture2D>("Sprites/Player/s_player_idle");
+			_position = new Vector2(100, 100);
+
+			// TODO: use this.Content to load your game content here
+		}
 
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload
@@ -62,9 +68,25 @@ namespace Parasol
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
+            //Move player
+			if (Keyboard.GetState().IsKeyDown(Keys.Up))
+			{
+				_position.Y--;
+			} 
+			if (Keyboard.GetState().IsKeyDown(Keys.Down))
+			{
+				_position.Y++;
+			}
+			if (Keyboard.GetState().IsKeyDown(Keys.Left))
+			{
+				_position.X--;
+			}
+			if (Keyboard.GetState().IsKeyDown(Keys.Right))
+			{
+				_position.X++;
+			}
 
-            base.Update(gameTime);
+			base.Update(gameTime);
         }
 
         /// <summary>
@@ -74,6 +96,11 @@ namespace Parasol
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
+
+			spriteBatch.Begin();
+			spriteBatch.Draw(_image, _position, Color.White);
+			spriteBatch.End();
+
 
             // TODO: Add your drawing code here
 
