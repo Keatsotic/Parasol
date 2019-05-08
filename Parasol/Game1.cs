@@ -12,8 +12,8 @@ namespace Parasol
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-		private Texture2D _image;
-		private Vector2 _position;
+		private Sprite _sprite1;
+		private Sprite _sprite2;
         
         public Game1()
         {
@@ -34,17 +34,26 @@ namespace Parasol
             base.Initialize();
         }
 
-        /// <summary>
-        /// LoadContent will be called once per game and is the place to load
-        /// all of your content.
-        /// </summary>
-        protected override void LoadContent()
-        {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+		/// <summary>
+		/// LoadContent will be called once per game and is the place to load
+		/// all of your content.
+		/// </summary>
+		protected override void LoadContent()
+		{
+			// Create a new SpriteBatch, which can be used to draw textures.
+			spriteBatch = new SpriteBatch(GraphicsDevice);
 
-			_image = Content.Load<Texture2D>("Sprites/Player/s_player_idle");
-			_position = new Vector2(100, 100);
+			var _texture1 = Content.Load<Texture2D>("Sprites/Player/s_player_idle");
+			var _texture2 = Content.Load<Texture2D>("Sprites/Player/s_player_idle");
+
+			_sprite1 = new Sprite(_texture1, Color.White);
+			_sprite1._position = new Vector2(100, 100);
+
+			_sprite2 = new Sprite(_texture2, Color.Red)
+			{
+				_position = new Vector2(100, 100)
+			};
+
 
 			// TODO: use this.Content to load your game content here
 		}
@@ -68,23 +77,8 @@ namespace Parasol
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            //Move player
-			if (Keyboard.GetState().IsKeyDown(Keys.Up))
-			{
-				_position.Y--;
-			} 
-			if (Keyboard.GetState().IsKeyDown(Keys.Down))
-			{
-				_position.Y++;
-			}
-			if (Keyboard.GetState().IsKeyDown(Keys.Left))
-			{
-				_position.X--;
-			}
-			if (Keyboard.GetState().IsKeyDown(Keys.Right))
-			{
-				_position.X++;
-			}
+			_sprite1.Update();
+          
 
 			base.Update(gameTime);
         }
@@ -98,7 +92,8 @@ namespace Parasol
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
 			spriteBatch.Begin();
-			spriteBatch.Draw(_image, _position, Color.White);
+			_sprite1.Draw(spriteBatch);
+			_sprite2.Draw(spriteBatch);
 			spriteBatch.End();
 
 
