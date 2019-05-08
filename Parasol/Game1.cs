@@ -12,9 +12,8 @@ namespace Parasol
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-		private Sprite _sprite1;
-		private Sprite _sprite2;
-        
+		Texture2D _texture;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -31,7 +30,12 @@ namespace Parasol
         {
 			// TODO: Add your initialization logic here
 
-            base.Initialize();
+			//set the resolution
+			Resolution.Init(ref graphics);
+			Resolution.SetVirtualResolution(400, 240);
+			Resolution.SetResolution(800, 480, true);
+
+			base.Initialize();
         }
 
 		/// <summary>
@@ -43,18 +47,8 @@ namespace Parasol
 			// Create a new SpriteBatch, which can be used to draw textures.
 			spriteBatch = new SpriteBatch(GraphicsDevice);
 
-			var _texture1 = Content.Load<Texture2D>("Sprites/Player/s_player_idle");
-			var _texture2 = Content.Load<Texture2D>("Sprites/Player/s_player_idle");
 
-			_sprite1 = new Sprite(_texture1, Color.White);
-			_sprite1._position = new Vector2(100, 100);
-
-			_sprite2 = new Sprite(_texture2, Color.Red)
-			{
-				_position = new Vector2(100, 100)
-			};
-
-
+			_texture = Content.Load<Texture2D>("Sprites/Player/s_player_idle");
 			// TODO: use this.Content to load your game content here
 		}
 
@@ -76,8 +70,6 @@ namespace Parasol
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-
-			_sprite1.Update();
           
 
 			base.Update(gameTime);
@@ -92,11 +84,8 @@ namespace Parasol
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
 			spriteBatch.Begin();
-			_sprite1.Draw(spriteBatch);
-			_sprite2.Draw(spriteBatch);
+			spriteBatch.Draw(_texture, new Vector2(100, 100), Color.White);
 			spriteBatch.End();
-
-
             // TODO: Add your drawing code here
 
             base.Draw(gameTime);
