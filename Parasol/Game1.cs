@@ -18,24 +18,27 @@ namespace Parasol
 
 		//create list of all objects
 		public List<GameObject> objects = new List<GameObject>();
+		public WallMap wallMap = new WallMap();
 		
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-        }
+
+			//set the resolution
+			Resolution.Init(ref graphics);
+			Resolution.SetVirtualResolution(400, 240); // resolution of assets
+			Resolution.SetResolution(1920, 1080, false);
+		}
 
 
         protected override void Initialize()
         {
 			// TODO: Add your initialization logic here
-
-			//set the resolution
-			Resolution.Init(ref graphics);
-			Resolution.SetVirtualResolution(400, 240);
-			Resolution.SetResolution(1920, 1080, false);
-
 			base.Initialize();
+			//init camera
+			Camera.Initialize();
+			Camera.updateYAxis = false;
         }
 
 
@@ -43,6 +46,8 @@ namespace Parasol
 		{
 			// Create a new SpriteBatch, which can be used to draw textures.
 			spriteBatch = new SpriteBatch(GraphicsDevice);
+
+			wallMap.Load(Content);
 			LoadLevel();
 			// TODO: use this.Content to load your game content here
 		}
@@ -60,11 +65,11 @@ namespace Parasol
 			
 			if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-			
-			//update input values
-			Input.Update();
-			UpdateObjects();
 
+			//update input values
+
+			UpdateObjects();
+			UpdateCamera();
 			base.Update(gameTime);
         }
 
@@ -75,8 +80,16 @@ namespace Parasol
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
 			// TODO: Add your drawing code here
-			spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.PointClamp);
+			//Resolution.BeginDraw();
+			spriteBatch.Begin(SpriteSortMode.BackToFront, 
+								BlendState.AlphaBlend, 
+								SamplerState.PointClamp, 
+								DepthStencilState.Default, 
+								RasterizerState.CullNone, 
+								null, 
+								Camera.GetTransformMatrix());
 			DrawObjects();
+			wallMap.DrawWalls(spriteBatch);
 			spriteBatch.End();
 
 
@@ -87,7 +100,12 @@ namespace Parasol
 
 		public void LoadLevel()
 		{
-			objects.Add(new Player(new Vector2(200, 200)));
+			objects.Add(new Player(new Vector2(100, 100)));
+
+			// add walls
+			wallMap.walls.Add(new Wall(new Rectangle(0, 200, 800, 32)));
+			wallMap.walls.Add(new Wall(new Rectangle(0, 0, 16, 200)));
+
 
 			LoadObjects();
 		}
@@ -105,7 +123,7 @@ namespace Parasol
 		{
 			for (int i = 0; i < objects.Count; i++)
 			{
-				objects[i].Update(objects);
+				objects[i].Update(objects, wallMap);
 			}
 		}
 
@@ -117,5 +135,12 @@ namespace Parasol
 			}
 		}
 		#endregion
+
+		private void UpdateCamera()
+		{
+			if (objects.Count == 0) { return; }
+
+			Camera.Update(objects[0].position+new Vector2(8, 0));
+		}
 	}
 }

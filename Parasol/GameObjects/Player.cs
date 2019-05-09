@@ -10,9 +10,19 @@ using System.Collections.Generic;
 
 namespace Parasol
 {
-	public class Player : GameObject
+	public class Player : Entity
 	{
-		private int _speed = 3;
+		//FSM enumerator
+		enum PlayerState
+		{
+			Idle,
+			Walk, 
+			Jump,
+			Attack,
+			Duck, 
+			DuckAttack,
+			Stairs
+		}
 
 		public Player()
 		{}
@@ -31,12 +41,17 @@ namespace Parasol
 		{
 			texture = content.Load<Texture2D>("Sprites/Player/s_player_idle");
 			base.Load(content);
+
+			//set custom hitbox
+			boundingBoxTopLeft = new Vector2(9, 8);
+			boundingBoxBottomRight = new Vector2(21, 32);
 		}
 
-		public override void Update(List<GameObject> objects)
+		public override void Update(List<GameObject> objects, WallMap wallMap)
 		{
-			CheckInput();
-			base.Update(objects);
+			CheckInput(objects, wallMap);
+			Input.Update();
+			base.Update(objects, wallMap);
 		}
 
 		public override void Draw(SpriteBatch spritebatch)
@@ -44,24 +59,52 @@ namespace Parasol
 			base.Draw(spritebatch);
 		}
 
-		private void CheckInput()
+		private void CheckInput(List<GameObject> objects, WallMap wallMap)
 		{
-			if (Input.IsKeyDown(Keys.Up) == true)
+			if (applyGravity == false)
 			{
-				position.Y -= _speed;
+				// top down style controls
+
+				if (Input.IsKeyDown(Keys.Up) == true)
+				{
+					MoveUp();
+				}
+				if (Input.IsKeyDown(Keys.Down) == true)
+				{
+					MoveDown();
+				}
+				if (Input.IsKeyDown(Keys.Left) == true)
+				{
+					MoveLeft();
+				}
+				if (Input.IsKeyDown(Keys.Right) == true)
+				{
+					MoveRight();
+				}
 			}
-			if (Input.IsKeyDown(Keys.Down) == true)
+			else
 			{
-				position.Y += _speed;
-			}
-			if (Input.IsKeyDown(Keys.Left) == true)
-			{
-				position.X -= _speed;
-			}
-			if (Input.IsKeyDown(Keys.Right) == true)
-			{
-				position.X += _speed;
+				// platformer style controls
+
+				if (Input.IsKeyDown(Keys.Left) == true)
+				{
+					MoveLeft();
+				}
+				if (Input.IsKeyDown(Keys.Right) == true)
+				{
+					MoveRight();
+				}
+				if (Input.IsKeyDown(Keys.Up) == true)
+				{
+					Jump(wallMap);
+				}
+				if (Input.IsKeyDown(Keys.Down) == true)
+				{
+					//Duck
+				}
 			}
 		}
+
+
 	}
 }
