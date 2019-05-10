@@ -22,8 +22,7 @@ namespace Parasol.Systems
 
 			if (xAxis == true && entity.velocity.X != 0)
 			{
-
-				futureBoundingBox.X += (int)Math.Ceiling(entity.velocity.X);
+				futureBoundingBox.X += (int)Math.Ceiling(entity.maxSpeed) * Math.Sign(entity.velocity.X);
 
 				// pixel perfect x axis collisions
 				Rectangle wallCollisionX = wallMap.CheckCollision(futureBoundingBox);
@@ -31,17 +30,20 @@ namespace Parasol.Systems
 				if (wallCollisionX != Rectangle.Empty) //if there is a collision xspd away from player...
 				{
 					var hSpd_ = Math.Sign(entity.velocity.X);
-
 					Rectangle pixelBoundingBox = entity.BoundingBox;
-					pixelBoundingBox.X += hSpd_;
-
-					Rectangle pixelCollision = wallMap.CheckCollision(pixelBoundingBox);
+					
+					var pixelCollision = wallMap.CheckCollision(pixelBoundingBox);
 					while (pixelCollision == Rectangle.Empty)
 					{
-						entity.position.X += hSpd_;
 						pixelBoundingBox.X += hSpd_;
 						pixelCollision = wallMap.CheckCollision(pixelBoundingBox);
+
+						if (pixelCollision == Rectangle.Empty)
+						{
+							entity.position.X += hSpd_;
+						}
 					}
+				
 					hSpd_ = 0;
 					return true;
 
@@ -62,12 +64,15 @@ namespace Parasol.Systems
 					Rectangle pixelBoundingBox = entity.BoundingBox;
 					pixelBoundingBox.Y += vSpd_;
 
-					Rectangle pixelCollision = wallMap.CheckCollision(pixelBoundingBox);
+					var pixelCollision = wallMap.CheckCollision(pixelBoundingBox);
 					while (pixelCollision == Rectangle.Empty)
 					{
-						entity.position.Y += vSpd_;
 						pixelBoundingBox.Y += vSpd_;
 						pixelCollision = wallMap.CheckCollision(pixelBoundingBox);
+						if (pixelCollision == Rectangle.Empty)
+						{
+							entity.position.Y += vSpd_;
+						}
 					}
 					vSpd_ = 0;
 					return true;

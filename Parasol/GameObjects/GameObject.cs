@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Content;
+using MonoGame.Extended.Sprites;
+using MonoGame.Extended.Animations.SpriteSheets;
+using MonoGame.Extended.TextureAtlases;
 
 namespace Parasol
 {		
@@ -21,27 +17,35 @@ namespace Parasol
 		public float layerDepth = 0.5f;
 		public bool active = true;
 		protected Vector2 direction;
+		protected Vector2 origin;
 
+		protected Sprite objectSprite = null;
+
+		//type identifier
+		public string objectType = null;
+
+		//will it be affected by walls
 		public bool canCollide = true;
-		protected Vector2 boundingBoxTopLeft, boundingBoxBottomRight;
 
+		//bounding boxes
+		const bool drawBoundingBoxes = false;
+
+
+		protected Vector2 boundingBoxTopLeft, boundingBoxBottomRight;
 		Texture2D boundingBoxTexture;
-		const bool drawBoundingBoxes = true;
 		
 
 		public Rectangle BoundingBox
 		{
 			get 
 			{
-				return new Rectangle((int)(position.X + (boundingBoxTopLeft.X * scale)),
-									(int)(position.Y + (boundingBoxTopLeft.Y * scale)),
-									(int)((boundingBoxBottomRight.X - (boundingBoxTopLeft.X)) * scale),
-									(int)((boundingBoxBottomRight.Y - (boundingBoxTopLeft.Y)) * scale));
+				return new Rectangle((int)(position.X + (boundingBoxTopLeft.X) - origin.X),
+									(int)(position.Y + (boundingBoxTopLeft.Y) - origin.Y),
+									(int)(boundingBoxBottomRight.X - (boundingBoxTopLeft.X)),
+									(int)(boundingBoxBottomRight.Y - (boundingBoxTopLeft.Y)));
 			}
 		
 		}
-
-		protected Vector2 center;
 
 		public GameObject()
 		{ }
@@ -64,7 +68,7 @@ namespace Parasol
 			}
 		}
 
-		public virtual void Update(List<GameObject> objects, WallMap wallMap)
+		public virtual void Update(List<GameObject> objects, WallMap wallMap, GameTime gametime)
 		{ }
 
 		public virtual bool CheckCollision(Rectangle input)
@@ -89,17 +93,9 @@ namespace Parasol
 			}
 
 			//draw object
-			if (texture != null && active == true)
+			if (objectSprite != null && active == true)
 			{
-				spritebatch.Draw(texture,
-								position,
-								null,
-								color,
-								rotation,
-								Vector2.Zero,
-								scale,
-								SpriteEffects.None,
-								layerDepth);
+				spritebatch.Draw(objectSprite);
 			}
 		}
 
@@ -107,8 +103,8 @@ namespace Parasol
 		{
 			if (texture == null) { return; }
 
-			center.X = texture.Width / 2;
-			center.Y = texture.Height / 2;
+			origin.X = texture.Width / 2;
+			origin.Y = texture.Height / 2;
 		}
 	}
 }

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Content;
 using System.Collections.Generic;
 using Parasol.Systems;
+using MonoGame.Extended.Sprites;
 
 
 namespace Parasol
@@ -23,13 +24,13 @@ namespace Parasol
 		public Vector2 velocity;
 		protected float accel = 0.75f;
 		public float friction = 1.2f;
-		protected float maxSpeed = 2.0f;
+		public float maxSpeed = 1.5f;
 
 		//jumping vars
-		float gravity = .3f;
+		protected float gravity = .3f;
 		const float terminalVelocity = 18.0f;
 		protected bool isJumping;
-		const float jumpHeight = 8.0f;
+		const float jumpHeight = 6.0f;
 
 		//choose whether graviy affects or not
 		public bool applyGravity = true;
@@ -45,7 +46,7 @@ namespace Parasol
 			base.Initialize();
 		}
 
-		public override void Update(List<GameObject> objects, WallMap wallMap)
+		public override void Update(List<GameObject> objects, WallMap wallMap, GameTime gametime)
 		{
 			UpdateMovement(objects, wallMap);
 
@@ -54,20 +55,20 @@ namespace Parasol
 			{
 				isJumping = false;
 			}
-			base.Update(objects, wallMap);
+			base.Update(objects, wallMap, gametime);
 		}
 
-		#region Movement Checking Methods
+		#region Update Movement Checking Methods
 
 		private void UpdateMovement(List<GameObject> objects, WallMap wallMap)
 		{
-			if((velocity.X != 0) && collision.CheckCollisions(this, wallMap, objects, true) == true)
+			if(canCollide == true && (velocity.X != 0) && collision.CheckCollisions(this, wallMap, objects, true) == true)
 			{
 				velocity.X = 0;
 			}
 			position.X += velocity.X;
 
-			if ((velocity.Y != 0) && collision.CheckCollisions(this, wallMap, objects, false) == true)
+			if (canCollide == true && (velocity.Y != 0) && collision.CheckCollisions(this, wallMap, objects, false) == true)
 			{
 				velocity.Y = 0;
 			}
@@ -84,7 +85,7 @@ namespace Parasol
 			// friction on Y if not using gravity
 			if (applyGravity == false)
 			{
-				//velocity.Y = TendToZero(velocity.Y, friction);
+				velocity.Y = TendToZero(velocity.Y, friction);
 			}
 
 		}
@@ -153,8 +154,8 @@ namespace Parasol
 		protected bool Jump(WallMap wallmap)
 		{
 			if (isJumping == true) { return false; }
-
-			if (velocity.Y <= gravity && OnGround(wallmap) != Rectangle.Empty)
+			var testRect = OnGround(wallmap);
+			if (velocity.Y <= gravity && testRect != Rectangle.Empty)
 			{
 				velocity.Y -= jumpHeight;
 				isJumping = true;
@@ -169,10 +170,10 @@ namespace Parasol
 
 		protected Rectangle OnGround(WallMap wallMap)
 		{
-			Rectangle futureBoundingBox = new Rectangle((int)(position.X + (boundingBoxTopLeft.X * scale)),
-														(int)(position.Y + (boundingBoxTopLeft.Y * scale) + (1*scale)),
-														(int)((boundingBoxBottomRight.X - (boundingBoxTopLeft.X)) * scale),
-														(int)((boundingBoxBottomRight.Y - (boundingBoxTopLeft.Y)) * scale));
+			Rectangle futureBoundingBox = new Rectangle((int)((BoundingBox.X)),
+														(int)((BoundingBox.Y ) + (1)),
+														(int)(BoundingBox.Width),
+														(int)(BoundingBox.Height));
 
 
 			return wallMap.CheckCollision(futureBoundingBox);

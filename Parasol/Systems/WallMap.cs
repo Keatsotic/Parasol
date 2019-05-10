@@ -18,8 +18,8 @@ namespace Parasol
 
 		Texture2D wallTexture;
 
-		public int mapWidth = 15;
-		public int mapHeight = 9;
+		//public int mapWidth = 15;
+		//public int mapHeight = 9;
 		public int tileSize = 16;
 
 		public void Load(ContentManager content)
@@ -43,7 +43,7 @@ namespace Parasol
 			{
 				if (walls[i] != null && walls[i].active == true)
 				{ spriteBatch.Draw(wallTexture, 
-								new Vector2(walls[i].wall.X, walls[i].wall.Y), 
+								new Vector2(walls[i].wall.X, walls[i].wall.Y),
 								walls[i].wall, //source rect
 								Color.White,   // color
 								0.0f,			//rotation
@@ -59,7 +59,7 @@ namespace Parasol
 	public class Wall
 	{
 		public Rectangle wall;
-		public bool active = true;
+		public bool active = true; 
 
 		public Wall()
 		{ }

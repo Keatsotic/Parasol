@@ -143,13 +143,13 @@ namespace Parasol
 				// Start by reseting viewport to (0,0,1,1)
 				FullViewport();
 				// Clear to Black
-				_Device.GraphicsDevice.Clear(Color.CornflowerBlue);
+				_Device.GraphicsDevice.Clear(Color.Black);
 				// Calculate Proper Viewport according to Aspect Ratio
 				ResetViewport();
 				// and clear that
 				// This way we are gonna have black bars if aspect ratio requires it and
 				// the clear color on the rest
-				_Device.GraphicsDevice.Clear(Color.CornflowerBlue);
+				_Device.GraphicsDevice.Clear(Color.Black);
 			}
 
 			static private void RecreateScaleMatrix()

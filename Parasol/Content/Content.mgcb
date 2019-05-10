@@ -26,6 +26,18 @@
 /processorParam:TextureFormat=Color
 /build:Sprites/Collision/s_wall.png
 
+#begin Sprites/Player/s_player_atlas.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Sprites/Player/s_player_atlas.png
+
 #begin Sprites/Player/s_player_idle.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -37,4 +49,21 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Sprites/Player/s_player_idle.png
+
+#begin TiledMaps/m_level_01.tmx
+/importer:TiledMapImporter
+/processor:TiledMapProcessor
+/build:TiledMaps/m_level_01.tmx
+
+#begin TiledMaps/Tilesets/t_level_01.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:TiledMaps/Tilesets/t_level_01.png
 
