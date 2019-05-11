@@ -14,6 +14,24 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin Sounds/Music/J04.mp3
+/importer:Mp3Importer
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/Music/J04.mp3
+
+#begin Sounds/sfx/a_attack2.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/sfx/a_attack2.wav
+
+#begin Sounds/sfx/a_hurt2.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/sfx/a_hurt2.wav
+
 #begin Sprites/Collision/s_wall.png
 /importer:TextureImporter
 /processor:TextureProcessor

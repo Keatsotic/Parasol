@@ -15,7 +15,10 @@ namespace Parasol
 		public Color color;
 		public float scale = 1.0f, rotation = 0.0f;
 		public float layerDepth = 0.5f;
+
 		public bool active = true;
+		public bool canMove = true;
+
 		protected Vector2 direction;
 		protected Vector2 origin;
 
@@ -28,8 +31,7 @@ namespace Parasol
 		public bool canCollide = true;
 
 		//bounding boxes
-		const bool drawBoundingBoxes = false;
-
+		bool drawBoundingBoxes = false;
 
 		protected Vector2 boundingBoxTopLeft, boundingBoxBottomRight;
 		Texture2D boundingBoxTexture;
@@ -54,6 +56,10 @@ namespace Parasol
 		{
 			direction = new Vector2(1, 0);
 			color = Color.White;
+
+#if DEBUG
+			drawBoundingBoxes = true;
+#endif
 		}
 
 		public virtual void Load(ContentManager content)
@@ -76,12 +82,12 @@ namespace Parasol
 			return BoundingBox.Intersects(input);
 		}
 
-		public virtual void Draw(SpriteBatch spritebatch)
+		public virtual void Draw(SpriteBatch spriteBatch)
 		{	
 			//draw bounding box
 			if (boundingBoxTexture != null && drawBoundingBoxes == true && active == true) 
 			{
-				spritebatch.Draw(boundingBoxTexture,
+				spriteBatch.Draw(boundingBoxTexture,
 								new Vector2(BoundingBox.X, BoundingBox.Y),
 								BoundingBox,
 								new Color(255, 0, 0, 80),
@@ -95,7 +101,7 @@ namespace Parasol
 			//draw object
 			if (objectSprite != null && active == true)
 			{
-				spritebatch.Draw(objectSprite);
+				spriteBatch.Draw(objectSprite);
 			}
 		}
 

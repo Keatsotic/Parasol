@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Parasol.GameObjects
 {
-	public class Enemy
+	public class Enemy : Entity
 	{
 		protected int contactDamage;
 	}

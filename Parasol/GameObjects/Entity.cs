@@ -30,7 +30,7 @@ namespace Parasol
 		protected float gravity = .3f;
 		const float terminalVelocity = 18.0f;
 		protected bool isJumping;
-		const float jumpHeight = 6.0f;
+		protected const float jumpHeight = 6.0f;
 
 		//choose whether graviy affects or not
 		public bool applyGravity = true;
@@ -48,7 +48,11 @@ namespace Parasol
 
 		public override void Update(List<GameObject> objects, WallMap wallMap, GameTime gametime)
 		{
-			UpdateMovement(objects, wallMap);
+			if (canMove == true)
+			{
+				UpdateMovement(objects, wallMap);
+			}
+			
 
 			//reset jumping bool
 			if (OnGround(wallMap) != Rectangle.Empty)
@@ -80,8 +84,6 @@ namespace Parasol
 				ApplyGravity(wallMap);
 			}
 
-			velocity.X = TendToZero(velocity.X, friction);
-
 			// friction on Y if not using gravity
 			if (applyGravity == false)
 			{
@@ -109,7 +111,7 @@ namespace Parasol
 
 		protected void MoveRight()
 		{
-			velocity.X += accel + friction;
+			velocity.X += maxSpeed;// (accel + friction);
 
 			if (velocity.X > maxSpeed) 
 			{
@@ -120,7 +122,7 @@ namespace Parasol
 
 		protected void MoveLeft()
 		{
-			velocity.X -= accel + friction;
+			velocity.X -= maxSpeed;// (accel + friction);
 
 			if (velocity.X < -maxSpeed)
 			{
@@ -151,18 +153,7 @@ namespace Parasol
 			direction.Y = -1;
 		}
 
-		protected bool Jump(WallMap wallmap)
-		{
-			if (isJumping == true) { return false; }
-			var testRect = OnGround(wallmap);
-			if (velocity.Y <= gravity && testRect != Rectangle.Empty)
-			{
-				velocity.Y -= jumpHeight;
-				isJumping = true;
-				return true;
-			}
-			return false;
-		}
+		
 
 		#endregion
 
@@ -185,6 +176,7 @@ namespace Parasol
 			if (val < 0.0f && (val += amount) > 0.0f) return 0f;
 			return val;
 		}
+
 		#endregion
 	}
 }

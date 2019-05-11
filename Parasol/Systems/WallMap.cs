@@ -15,6 +15,10 @@ namespace Parasol
 	public class WallMap
 	{
 		public List<Wall> walls = new List<Wall>();
+		public List<Stair> stairs = new List<Stair>();
+		public List<Door> doors = new List<Door>();
+		public ScreenTransition screen;
+		public bool rightTransition;
 
 		Texture2D wallTexture;
 
@@ -37,12 +41,55 @@ namespace Parasol
 			return Rectangle.Empty;
 		}
 
+		public Rectangle CheckForDoor(Rectangle input)
+		{
+			for (int i = 0; i < doors.Count; i++)
+			{
+				if (doors[i] != null && doors[i].door.Intersects(input))
+				{
+					Door.doorEnter = true;
+					if (input.Left < doors[i].door.Left)
+					{
+						rightTransition = true;
+					}
+					else if (input.Left > doors[i].door.Left)
+					{
+						rightTransition = false;
+					}
+					
+					return doors[i].door;
+				}
+			}
+			return Rectangle.Empty;
+		}
+
+		public Rectangle StairCollision(Rectangle input)
+		{
+			for (int i = 0; i < stairs.Count; i++)
+			{
+				if (stairs[i] != null && stairs[i].stair.Intersects(input) == true)
+				{ 
+					if (stairs[i].goesUpToRight == false)
+					{
+						Stair.stairsGoUpToRight = false;
+					} 
+					else 
+					{ 
+						Stair.stairsGoUpToRight = true;
+					}
+					return stairs[i].stair; 
+				}
+			}
+			return Rectangle.Empty;
+		}
+
 		public void DrawWalls(SpriteBatch spriteBatch)
 		{
 			for (int i = 0; i < walls.Count; i++)
 			{
 				if (walls[i] != null && walls[i].active == true)
-				{ spriteBatch.Draw(wallTexture, 
+				{ 
+				spriteBatch.Draw(wallTexture, 
 								new Vector2(walls[i].wall.X, walls[i].wall.Y),
 								walls[i].wall, //source rect
 								Color.White,   // color
@@ -50,7 +97,7 @@ namespace Parasol
 								Vector2.Zero,	//origin
 								1.0f,			//scale
 								SpriteEffects.None,
-								0.7f);			//layer depth
+								1.0f);			//layer depth
 				}
 			}
 		}
@@ -67,6 +114,43 @@ namespace Parasol
 		public Wall(Rectangle inputRectangle)
 		{
 			wall = inputRectangle;
+		}
+	}
+
+	public class Door
+	{
+		public Rectangle door;
+		public bool active = true;
+		static public bool doorEnter;
+
+		public Door()
+		{ }
+
+		public Door(Rectangle inputRectangle)
+		{
+			door = inputRectangle;
+		}
+	}
+
+	public class Stair
+	{
+		public Rectangle stair;
+		public bool active = true;
+		public bool goesUpToRight;
+		public static bool stairsGoUpToRight = true;
+
+		public Stair()
+		{ }
+
+		public Stair(Rectangle inputRectangle)
+		{
+			stair = inputRectangle;
+			goesUpToRight = true;
+		}
+		public Stair(Rectangle inputRectangle, bool upToRight)
+		{
+			stair = inputRectangle;
+			goesUpToRight = upToRight;
 		}
 	}
 }

@@ -27,6 +27,21 @@ namespace Parasol
 		//public List<Door> killDoor = new List<Door>();
 		public int wilKillPlayer;
 
+		public enum Levels
+		{
+			titleScreen,
+			loadScreen, 
+			nameSelectScreen,
+			overworld,
+			gameOver,
+			level_01,
+			level_02,
+			level_03,
+			level_04,
+			level_05,
+			level_06,
+		}
+
 		//music 
 		public static SoundEffect bgMusic;
 		public static SoundEffectInstance soundEffectInstance;
