@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
-using MonoGame.Extended.Sprites;
-using MonoGame.Extended.Animations.SpriteSheets;
+using System.Collections.Generic;
 using MonoGame.Extended.TextureAtlases;
+using MonoGame.Extended.Animations;
+using MonoGame.Extended.Sprites;
+using System;
 
 namespace Parasol
 {		
@@ -16,10 +19,12 @@ namespace Parasol
 		public float scale = 1.0f, rotation = 0.0f;
 		public float layerDepth = 0.5f;
 
+		//will it be affected by walls
+		public bool canCollide = true;
 		public bool active = true;
 		public bool canMove = true;
 
-		protected Vector2 direction;
+		public Vector2 direction;
 		protected Vector2 origin;
 
 		protected Sprite objectSprite = null;
@@ -27,11 +32,11 @@ namespace Parasol
 		//type identifier
 		public string objectType = null;
 
-		//will it be affected by walls
-		public bool canCollide = true;
-
 		//bounding boxes
 		bool drawBoundingBoxes = false;
+
+		//choose whether graviy affects or not
+		public bool applyGravity = true;
 
 		protected Vector2 boundingBoxTopLeft, boundingBoxBottomRight;
 		Texture2D boundingBoxTexture;

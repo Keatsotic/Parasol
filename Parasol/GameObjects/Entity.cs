@@ -32,9 +32,6 @@ namespace Parasol
 		protected bool isJumping;
 		protected const float jumpHeight = 6.0f;
 
-		//choose whether graviy affects or not
-		public bool applyGravity = true;
-
 		//init collision object
 		Collision collision = new Collision();
 

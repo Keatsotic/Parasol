@@ -18,7 +18,6 @@ namespace Parasol
 		public List<Stair> stairs = new List<Stair>();
 		public List<Door> doors = new List<Door>();
 		public ScreenTransition screen;
-		public bool rightTransition;
 
 		Texture2D wallTexture;
 
@@ -43,18 +42,36 @@ namespace Parasol
 
 		public Rectangle CheckForDoor(Rectangle input)
 		{
+
 			for (int i = 0; i < doors.Count; i++)
 			{
 				if (doors[i] != null && doors[i].door.Intersects(input))
 				{
 					Door.doorEnter = true;
-					if (input.Left < doors[i].door.Left)
+					if (input.Top < doors[i].door.Top)
 					{
-						rightTransition = true;
+						Door.transitionDirection = "Up";
+					}
+					if (input.Top < doors[i].door.Top)
+					{
+						Door.transitionDirection = "Down";
+					}
+					else if (input.Left < doors[i].door.Left)
+					{
+						Door.transitionDirection = "left";
 					}
 					else if (input.Left > doors[i].door.Left)
 					{
-						rightTransition = false;
+						if (doors[i].door.X == 0)
+						{
+							Door.transitionDirection = "overworld";
+						}
+						else
+						{
+
+							Door.transitionDirection = "right";
+						}
+
 					}
 					
 					return doors[i].door;
@@ -121,7 +138,8 @@ namespace Parasol
 	{
 		public Rectangle door;
 		public bool active = true;
-		static public bool doorEnter;
+		static public bool doorEnter = false;
+		static public string transitionDirection;
 
 		public Door()
 		{ }

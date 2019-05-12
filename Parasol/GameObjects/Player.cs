@@ -139,40 +139,46 @@ namespace Parasol
 
 		public override void Update(List<GameObject> objects, WallMap wallMap, GameTime gametime)
 		{
-			//Check Input
-			PlayerInput();
-
-			//FSM Check
-			StateMachine(PlayerState, objects, wallMap);
-
-			//override player states: can always attack unless already attacking
-			if (playerAttack == true && attackTimer <= 0)
+			if (!Door.doorEnter)
 			{
-				if (PlayerState != State.duck) { PlayerState = State.attack; attackSFX.Play(); }
-				else { PlayerState = State.duckAttack; attackSFX.Play(); }
+				//Check Input
+				PlayerInput();
+
+				//FSM Check
+				StateMachine(PlayerState, objects, wallMap);
+
+				//override player states: can always attack unless already attacking
+				if (playerAttack == true && attackTimer <= 0)
+				{
+					if (PlayerState != State.duck) { PlayerState = State.attack; attackSFX.Play(); }
+					else { PlayerState = State.duckAttack; attackSFX.Play(); }
+				}
+
+				if (attackTimer > 0) { attackTimer--; }
+				//update the damage object
+				damageObject.Update(objects, wallMap, gametime);
+
+				//update sprite
+				if (stopAnimating == false)
+				{
+					objectAnimated.Update(gametime);
+				}
+
+				base.Update(objects, wallMap, gametime);
+
+				//are we in a door
+
+				var testRectDoor = InDoor(wallMap);
+				if (testRectDoor != Rectangle.Empty)
+				{
+					applyGravity = false;
+				}
+
+
+				//are we on the ground
+				var testRect = OnGround(wallMap);
+				if (testRect != Rectangle.Empty) { isOnGround = true; } else { isOnGround = false; }
 			}
-			if (attackTimer > 0) { attackTimer--; }
-			//update the damage object
-			damageObject.Update(objects, wallMap, gametime);
-
-			//update sprite
-			if (stopAnimating == false)
-			{
-				objectAnimated.Update(gametime);
-			}
-
-
-
-			base.Update(objects, wallMap, gametime);
-			//are we in a door
-			var testRectDoor = InDoor(wallMap);
-			if (testRectDoor != Rectangle.Empty) { applyGravity = false; }
-
-			//are we on the ground
-			var testRect = OnGround(wallMap);
-			if (testRect != Rectangle.Empty) { isOnGround = true; } else { isOnGround = false; }
-
-			
 			objectSprite.Position = position;
 		}
 
