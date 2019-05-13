@@ -22,10 +22,10 @@ namespace Parasol.Systems
 
 			if (xAxis == true && entity.velocity.X != 0)
 			{
-				futureBoundingBox.X += (int)Math.Ceiling(entity.maxSpeed) * Math.Sign(entity.velocity.X);
+				futureBoundingBox.X += (int)Math.Ceiling(entity.velocity.X);
 
 				// pixel perfect x axis collisions
-				Rectangle wallCollisionX = wallMap.CheckCollision(futureBoundingBox);
+				var wallCollisionX = wallMap.CheckCollision(futureBoundingBox);
 
 				if (wallCollisionX != Rectangle.Empty) //if there is a collision xspd away from player...
 				{
@@ -55,7 +55,7 @@ namespace Parasol.Systems
 				futureBoundingBox.Y += (int)Math.Ceiling(entity.velocity.Y);
 
 				// pixel perfect y axis collisions
-				Rectangle wallCollisionY = wallMap.CheckCollision(futureBoundingBox);
+				var wallCollisionY = wallMap.CheckCollision(futureBoundingBox);
 
 				if (wallCollisionY != Rectangle.Empty)
 				{
@@ -124,6 +124,5 @@ namespace Parasol.Systems
 			}
 
 		}
-
 	}
 }

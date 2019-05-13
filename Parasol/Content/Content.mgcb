@@ -68,10 +68,27 @@
 /processorParam:TextureFormat=Color
 /build:Sprites/Player/s_player_idle.png
 
-#begin TiledMaps/m_level_01.tmx
+#begin Sprites/Player/s_player_overworld_atlas.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Sprites/Player/s_player_overworld_atlas.png
+
+#begin TiledMaps/m_level_1.tmx
 /importer:TiledMapImporter
 /processor:TiledMapProcessor
-/build:TiledMaps/m_level_01.tmx
+/build:TiledMaps/m_level_1.tmx
+
+#begin TiledMaps/m_level_Overworld.tmx
+/importer:TiledMapImporter
+/processor:TiledMapProcessor
+/build:TiledMaps/m_level_Overworld.tmx
 
 #begin TiledMaps/Tilesets/t_level_01.png
 /importer:TextureImporter
@@ -84,4 +101,16 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:TiledMaps/Tilesets/t_level_01.png
+
+#begin TiledMaps/Tilesets/t_overworld.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:TiledMaps/Tilesets/t_overworld.png
 

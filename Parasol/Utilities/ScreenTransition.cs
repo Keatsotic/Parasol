@@ -7,18 +7,17 @@ using static Parasol.SaveLoad;
 namespace Parasol
 {
 	public class ScreenTransition
-	{
-		public int screenTimer = 50;
-
+	{ 
 		Texture2D fadeTexture;
 		Rectangle fadeScreenRec;
 
 		public bool fadeIn = true;
 		public bool fadeComplete;
 		private bool fadeOut;
-		private bool fading;
+		public bool fading;
 		private int fadeAlpha = 0;
-		private int roomDir;
+		private const int screenTimerMax = 50;
+		private int screenTimer = screenTimerMax;
 
 		public ScreenTransition()
 		{
@@ -44,33 +43,36 @@ namespace Parasol
 								  0f);
 		}
 
+
+
 		public void StartScreenTransition(List<GameObject> objects,
 									 GraphicsDeviceManager graphics,
 									 ContentManager content,
 									 SceneManager sceneManager,
 									 string transitionDirection,
-									 int roomNumber)
+									 string roomNumber)
 		{
+			Game1.roomNumber = roomNumber;
 			//sliding screens
-			if (transitionDirection != "Overworld" && !fading)
+			// if we are transitioning to a level and not a room, the number of chars in the room will be more than 3, 
+			//so the room number will be the level number instead
+			if (transitionDirection == "Left" || transitionDirection == "Right")
 			{
-				if (transitionDirection == "left")
+				if (transitionDirection == "Left")
 				{
 					Camera.cameraMin.X = Camera.position.X;
 					objects[0].position.Y = objects[0].position.Y;
 					objects[0].position.X += 0.9f;
 					Camera.cameraMin.X += 8;
 					Camera.cameraMax.X += 8;
-					roomDir = 1;
 				}
-				if (transitionDirection == "right")
+				if (transitionDirection == "Right")
 				{
 					Camera.cameraMax.X = Camera.position.X;
 					objects[0].position.Y = objects[0].position.Y;
 					objects[0].position.X -= 0.9f;
 					Camera.cameraMin.X -= 8;
 					Camera.cameraMax.X -= 8;
-					roomDir = -1;
 				}
 				screenTimer--;
 
@@ -78,38 +80,36 @@ namespace Parasol
 				{
 					sceneManager.UnloadObjects(false, objects);
 					Door.doorEnter = false;
-					Game1.roomNumber = roomNumber + roomDir;
-					screenTimer = 50;
+					screenTimer = screenTimerMax;
 					objects[0].applyGravity = true;
 					sceneManager.LoadLevel(content, graphics, objects, Game1.levelNumber, Game1.roomNumber, false);
 				}
 
 
 			}
+			if (transitionDirection == "StairTransition") // change rooms while staying on the stairs
+			{
+				sceneManager.UnloadObjects(true, objects);
+				Door.doorEnter = false;
+				screenTimer = screenTimerMax;
+				sceneManager.LoadLevel(content, graphics, objects, Game1.levelNumber, Game1.roomNumber, false);
+			}
 
-			if (transitionDirection == "overworld") //
+			if (transitionDirection == "Fade") //
 			{
 				FadeInOut();
-
+		
 				if (fadeComplete && screenTimer <= 0)
 				{
+					Game1.roomNumber = "1";
 					sceneManager.UnloadObjects(true, objects);
-					Game1.levelNumber = "0"; //
-					if (objects.Count > 0) { objects[0].applyGravity = false; }
-					sceneManager.LoadLevel(content, graphics, objects, Game1.levelNumber, 1, true);
-				}
-				else if (fadeComplete && screenTimer <= 0 && Game1.levelNumber == "0") //
-				{
-					sceneManager.UnloadObjects(true, objects);
-					Game1.levelNumber = "1";   //
-					if (objects.Count > 0) { objects[0].applyGravity = true; }
-					sceneManager.LoadLevel(content, graphics, objects, Game1.levelNumber, 1, true);
+					sceneManager.LoadLevel(content, graphics, objects, Game1.levelNumber, Game1.roomNumber, true);
 				}
 				if (fadeComplete)
 				{
 					fadeComplete = false;
 					fadeOut = true;
-					screenTimer = 50;
+					screenTimer = screenTimerMax;
 
 					// save the game
 					XmlSerialization.WriteToXmlFile("SaveFile0" + Game1.saveSlot + ".txt", Game1.destroyedPermanent);
@@ -123,10 +123,11 @@ namespace Parasol
 		{
 			fading = true;
 			// fade screen
+
 			screenTimer -= 2;
 			if (fadeIn)
 			{
-				fadeAlpha += 10;
+				fadeAlpha += 8;
 
 				if (fadeAlpha >= 255)
 				{
@@ -136,8 +137,7 @@ namespace Parasol
 			}
 			if (fadeOut)
 			{
-
-				fadeAlpha -= 10;
+				fadeAlpha -= 8;
 
 				if (fadeAlpha <= 0)
 				{
@@ -145,10 +145,9 @@ namespace Parasol
 					fadeOut = false;
 					fadeIn = true;
 					fading = false;
-					screenTimer = 50;
+					screenTimer = screenTimerMax;
 				}
 			}
-		}
-		
+		}	
 	}
 }

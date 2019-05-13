@@ -9,21 +9,22 @@ using Microsoft.Xna.Framework.Content;
 using System.Collections.Generic;
 using MonoGame.Extended.Tiled;
 using MonoGame.Extended.Tiled.Graphics;
-
+using System;
 
 namespace Parasol
 {
 	public class SceneManager
 	{
 		//map vars
-		public TiledMap tiledMap;
-		public TiledMapRenderer renderer;
+		private TiledMap tiledMap;
+		private TiledMapRenderer renderer;
 		public TiledMapObjectLayer objectLayer;
-		public Vector2 roomMin;
-		public Vector2 roomMax;
+		private Vector2 roomMin;
+		private Vector2 roomMax;
+		private int parallax;
 
-		public SoundEffect bgMusic;
-		public SoundEffectInstance soundEffectInstance;
+		private SoundEffect bgMusic;
+		private SoundEffectInstance soundEffectInstance;
 		private string levelNumberHolder;
 
 		//wallMap vars
@@ -31,10 +32,10 @@ namespace Parasol
 		public TiledMapObjectLayer ObjectLayer { get; private set; } = null;
 
 		//lists of objects / walls / doors to clean up after
-		public List<GameObject> killObjects = new List<GameObject>();
-		public List<Wall> killWalls = new List<Wall>();
-		public List<Door> killDoors = new List<Door>();
-		public int willKillPlayer;
+		private List<GameObject> killObjects = new List<GameObject>();
+		private List<Wall> killWalls = new List<Wall>();
+		private List<Door> killDoors = new List<Door>();
+		private int willKillPlayer;
 
 
 		//temp vars
@@ -49,7 +50,7 @@ namespace Parasol
 								GraphicsDeviceManager graphics,
 								List<GameObject> objects,
 								string levelNumber,
-								int roomNumber,
+								string roomNumber,
 								bool restartMusic)
 		{
 
@@ -72,11 +73,16 @@ namespace Parasol
 
 			//Load and Draw the map and walls
 			wallMap.Load(content);
-			tiledMap = content.Load<TiledMap>("TiledMaps/m_level_0" + 1);
+			tiledMap = content.Load<TiledMap>("TiledMaps/m_level_" + levelNumber);
 			renderer = new TiledMapRenderer(graphics.GraphicsDevice);
+
+
 
 			//access walls in map
 			var tiledMapWallsLayer = tiledMap.GetLayer<TiledMapTileLayer>("Wall");
+
+			//access stairs in map
+			var tiledMapInteractLayer = tiledMap.GetLayer<TiledMapTileLayer>("Interact");
 
 			//access objects in map
 			objectLayer = tiledMap.GetLayer<TiledMapObjectLayer>("Room_" + roomNumber);
@@ -87,12 +93,37 @@ namespace Parasol
 				{
 					if (objectLayer.Objects[i].Type == "Player" && objects.Count == 0)
 					{
-						objects.Add(new Player(new Vector2(objectLayer.Objects[i].Position.X,
-																objectLayer.Objects[i].Position.Y)));
-						objects[0].Initialize();
-						objects[0].Load(content);
+						if (Door.transitionDirection == "StairTransition")
+						{
+							if (objectLayer.Objects[i].Name == "PlayerStartStairs")
+							{
+								objects.Add(new Player(new Vector2(objectLayer.Objects[i].Position.X,
+																		objectLayer.Objects[i].Position.Y)));
+							}
+
+
+						}
+						else if (Door.transitionDirection != "StairTransition" && objectLayer.Objects[i].Name == "PlayerStart")
+						{
+							if (Game1.levelNumber != "Overworld")
+							{
+								objects.Add(new Player(new Vector2(objectLayer.Objects[i].Position.X,
+																				objectLayer.Objects[i].Position.Y)));
+							} 
+							else 
+							{
+								objects.Add(new PlayerOverworld(new Vector2(objectLayer.Objects[i].Position.X,
+																					objectLayer.Objects[i].Position.Y)));
+							}
+						}
+						//if the player exist, initialize and load
+						if (objects.Count > 0)
+						{
+							objects[0].Initialize();
+							objects[0].Load(content);
+						}
 					}
-					if (objectLayer.Objects[i].Type == "Camera")
+					if (objectLayer.Objects[i].Type == "Camera") // set camera max and min
 					{
 						if (objectLayer.Objects[i].Name == "cameraMin")
 						{
@@ -105,7 +136,7 @@ namespace Parasol
 							roomMax = objectLayer.Objects[i].Position;
 						}
 					}
-					if (objectLayer.Objects[i].Type == "CameraRestrict")
+					if (objectLayer.Objects[i].Type == "CameraRestrict") //set camera restrictions
 					{
 						if (objectLayer.Objects[i].Name == "Horizontal")
 						{
@@ -116,16 +147,27 @@ namespace Parasol
 							Camera.updateYAxis = true;
 						}
 					}
+					if (objectLayer.Objects[i].Type == "Door") // make doors
+					{
+						wallMap.doors.Add(new Door(new Rectangle((int)objectLayer.Objects[i].Position.X,
+																(int)objectLayer.Objects[i].Position.Y,
+																(int)objectLayer.Objects[i].Size.Width,
+																(int)objectLayer.Objects[i].Size.Height),
+																objectLayer.Objects[i].Name));
+					}
 				}
 			}
-
+			// draw the walls
 			if (tiledMapWallsLayer != null)
 			{
 				for (var i = 0; i < tiledMapWallsLayer.Width; i++)
 				{
 					for (var j = 0; j < tiledMapWallsLayer.Height; j++)
 					{
-						if ((i >= roomMin.X / tiledMapWallsLayer.TileWidth && j >= roomMin.Y / tiledMapWallsLayer.TileHeight) && (i <= roomMax.X / tiledMapWallsLayer.TileWidth && j <= roomMax.Y / tiledMapWallsLayer.TileHeight))
+						if ((i > (roomMin.X - tiledMapWallsLayer.TileWidth) / tiledMapWallsLayer.TileWidth && 
+						j > (roomMin.Y - tiledMapWallsLayer.TileHeight) / tiledMapWallsLayer.TileHeight) && 
+						(i <= (roomMax.X + tiledMapWallsLayer.TileWidth) / tiledMapWallsLayer.TileWidth && 
+						j <= (roomMax.Y + tiledMapWallsLayer.TileHeight) / tiledMapWallsLayer.TileHeight))
 						{
 							if (tiledMapWallsLayer.TryGetTile(i, j, out TiledMapTile? tile))
 							{
@@ -136,31 +178,39 @@ namespace Parasol
 																			tiledMapWallsLayer.TileWidth,
 																			tiledMapWallsLayer.TileHeight)));
 								}
+							}
+						}
+					}
+				}
+			}
+			if (tiledMapInteractLayer != null)
+			{
+				for (var i = 0; i < tiledMapInteractLayer.Width; i++)
+				{
+					for (var j = 0; j < tiledMapInteractLayer.Height; j++)
+					{
+						if ((i >= roomMin.X / tiledMapInteractLayer.TileWidth && j >= roomMin.Y / tiledMapInteractLayer.TileHeight) && (i <= roomMax.X / tiledMapInteractLayer.TileWidth && j <= roomMax.Y / tiledMapInteractLayer.TileHeight))
+						{
+							if (tiledMapInteractLayer.TryGetTile(i, j, out TiledMapTile? tile))
+							{
 								if (tile.Value.GlobalIdentifier == 2) // make stairs
 								{
 									//use for stair directions
 									if (!tile.Value.IsFlippedHorizontally)
 									{
-										wallMap.stairs.Add(new Stair(new Rectangle(i * tiledMapWallsLayer.TileWidth,
-																				j * tiledMapWallsLayer.TileHeight,
-																				tiledMapWallsLayer.TileWidth,
-																				tiledMapWallsLayer.TileHeight)));
+										wallMap.stairs.Add(new Stair(new Rectangle(i * tiledMapInteractLayer.TileWidth,
+																				j * tiledMapInteractLayer.TileHeight,
+																				tiledMapInteractLayer.TileWidth,
+																				tiledMapInteractLayer.TileHeight)));
 									}
 									else
 									{
-										wallMap.stairs.Add(new Stair(new Rectangle(i * tiledMapWallsLayer.TileWidth,
-																					j * tiledMapWallsLayer.TileHeight,
-																					tiledMapWallsLayer.TileWidth,
-																					tiledMapWallsLayer.TileHeight), false));
+										wallMap.stairs.Add(new Stair(new Rectangle(i * tiledMapInteractLayer.TileWidth,
+																					j * tiledMapInteractLayer.TileHeight,
+																					tiledMapInteractLayer.TileWidth,
+																					tiledMapInteractLayer.TileHeight), false));
 
 									}
-								}
-								if (tile.Value.GlobalIdentifier == 3) // make stairs
-								{
-									wallMap.doors.Add(new Door(new Rectangle(i * tiledMapWallsLayer.TileWidth,
-																			j * tiledMapWallsLayer.TileHeight,
-																			tiledMapWallsLayer.TileWidth,
-																			tiledMapWallsLayer.TileHeight)));
 								}
 							}
 						}
@@ -223,7 +273,24 @@ namespace Parasol
 
 		public void Draw()
 		{
-			renderer.Draw(tiledMap, Camera.GetTransformMatrix());
+ 			parallax = (int)Math.Round(Camera.position.X * 0.6f);
+		
+			Matrix layerMg = Matrix.CreateTranslation((Camera.position.X)*0.1f, 0, 0) * Camera.GetTransformMatrix();
+			Matrix layerBg = Matrix.CreateTranslation(parallax-176, 0, 0) * Camera.GetTransformMatrix();
+
+			if (tiledMap.GetLayer("FarBackground") != null)
+			{
+				renderer.Draw(tiledMap.GetLayer("FarBackground"), Resolution.GetTransformationMatrix());
+			}
+			if (tiledMap.GetLayer("Background") != null)
+			{
+				renderer.Draw(tiledMap.GetLayer("Background"), layerBg);
+			}
+			if (tiledMap.GetLayer("MidBackground") != null)
+			{
+				renderer.Draw(tiledMap.GetLayer("MidBackground"), layerMg);
+			}
+			renderer.Draw(tiledMap.GetLayer("Foreground"), Camera.GetTransformMatrix());
 		}
 
 		#endregion

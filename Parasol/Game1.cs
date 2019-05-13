@@ -21,7 +21,7 @@ namespace Parasol
 
 		//int level vars
 		public static string levelNumber = "1";
-		public static int roomNumber = 1;
+		public static string roomNumber = "1";
 		public static string previousLevel;
 
 		//create list of all objects
@@ -38,7 +38,7 @@ namespace Parasol
 
 			Resolution.Init(ref graphics);
 			Resolution.SetVirtualResolution(400, 240);
-			Resolution.SetResolution(1200, 720, false);
+			Resolution.SetResolution(1920, 1080, false);
 
 		}
 
@@ -50,7 +50,7 @@ namespace Parasol
 			//init camera
 			Camera.Initialize();
 			Camera.cameraOffset = new Vector2(Resolution.VirtualWidth / 2, Resolution.VirtualHeight / 2);
-
+			graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
 			IsFixedTimeStep = true;
 			TargetElapsedTime = TimeSpan.FromSeconds(1f / 60f);
 			base.Initialize();
@@ -113,7 +113,7 @@ namespace Parasol
 		//camera methods
 		private void UpdateCamera()
 		{
-			Camera.LookAt(new Vector2(0, 0));
+			//Camera.LookAt(new Vector2(0, 0));
 			if (objects.Count == 0) { return; }
 			Camera.Update(objects[0].position + new Vector2(16, 0));
 		}

@@ -46,7 +46,6 @@ namespace Parasol
 		private bool playerSpecial;
 		private bool playerMenu;
 
-
 		public State PlayerState { get; set; }
 		public AnimatedSprite objectAnimated;
 		private bool stopAnimating = false;
@@ -76,7 +75,6 @@ namespace Parasol
 		public Player(Vector2 initPosition)
 		{
 			position = initPosition;
-
 			damageObject = new DamageObject();
 			
 		}
@@ -85,14 +83,15 @@ namespace Parasol
 		{
 			PlayerState = State.idle;
 			objectType = "player";
-			health = HUD.playerMaxHealth;
+			//health = HUD.playerMaxHealth;
 
+			if (Door.transitionDirection == "StairTransition") { isOnStairs = true; PlayerState = State.stairs; }
 			accel = 0.75f;
 			friction = 1.2f;
 			maxSpeed = 1.2f;
 
 
-		damageObject.Initialize();
+			damageObject.Initialize();
 
 
 			base.Initialize();
@@ -124,7 +123,7 @@ namespace Parasol
 			#endregion
 
 
-			objectAnimated = new AnimatedSprite(animationFactory, "attack");
+			objectAnimated = new AnimatedSprite(animationFactory, "idle");
 			objectSprite = objectAnimated;
 
 			attackSFX = content.Load<SoundEffect>("Sounds/sfx/a_attack2");
@@ -187,7 +186,6 @@ namespace Parasol
 			damageObject.Draw(spriteBatch);
 			base.Draw(spriteBatch);
 		}
-
 
 		#region FINITE STATE MACHINE
 
@@ -680,6 +678,7 @@ namespace Parasol
 				jumpOnStairs = false;
 			}
 		}
+
 		#endregion
 
 	}

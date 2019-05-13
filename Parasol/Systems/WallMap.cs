@@ -32,11 +32,15 @@ namespace Parasol
 
 		public Rectangle CheckCollision(Rectangle input)
 		{ 
+		
 			for (int i = 0; i < walls.Count; i++)
 			{
-				if (walls[i] != null && walls[i].wall.Intersects(input) == true)
+				if (walls[i] != null && 
+				walls[i].wall.Intersects(input) == true)
+
 				{ return walls[i].wall; }
 			}
+			
 			return Rectangle.Empty;
 		}
 
@@ -48,32 +52,30 @@ namespace Parasol
 				if (doors[i] != null && doors[i].door.Intersects(input))
 				{
 					Door.doorEnter = true;
-					if (input.Top < doors[i].door.Top)
+					if (Game1.levelNumber == "Overworld" || doors[i].nextRoomNumber == "Overworld")
 					{
-						Door.transitionDirection = "Up";
+						Game1.levelNumber = doors[i].nextRoomNumber;
+						Game1.roomNumber = "1";
+						Door.transitionDirection = "Fade";
 					}
-					if (input.Top < doors[i].door.Top)
+					else
 					{
-						Door.transitionDirection = "Down";
-					}
-					else if (input.Left < doors[i].door.Left)
-					{
-						Door.transitionDirection = "left";
-					}
-					else if (input.Left > doors[i].door.Left)
-					{
-						if (doors[i].door.X == 0)
+						if (input.Top < doors[i].door.Top || input.Bottom > doors[i].door.Bottom)
 						{
-							Door.transitionDirection = "overworld";
+							Door.transitionDirection = "StairTransition";
+							Game1.roomNumber = doors[i].nextRoomNumber;
 						}
-						else
+						else if (input.Left < doors[i].door.Left)
 						{
-
-							Door.transitionDirection = "right";
+							Door.transitionDirection = "Left";
+							Game1.roomNumber = doors[i].nextRoomNumber;
 						}
-
+						else if (input.Left > doors[i].door.Left)
+						{
+							Door.transitionDirection = "Right";
+							Game1.roomNumber = doors[i].nextRoomNumber;
+						}
 					}
-					
 					return doors[i].door;
 				}
 			}
@@ -140,12 +142,14 @@ namespace Parasol
 		public bool active = true;
 		static public bool doorEnter = false;
 		static public string transitionDirection;
+		public string nextRoomNumber;
 
 		public Door()
 		{ }
 
-		public Door(Rectangle inputRectangle)
+		public Door(Rectangle inputRectangle, string roomToGoTo)
 		{
+			nextRoomNumber = roomToGoTo;
 			door = inputRectangle;
 		}
 	}
