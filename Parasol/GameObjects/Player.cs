@@ -50,9 +50,9 @@ namespace Parasol
 		public AnimatedSprite objectAnimated;
 		private bool stopAnimating = false;
 
-		private bool isOnGround;
 		private int attackTimer;
 		private const int maxTimer = 10;
+	
 
 		private bool isOnStairs = false;
 		private bool jumpOnStairs = false;
@@ -76,19 +76,18 @@ namespace Parasol
 		{
 			position = initPosition;
 			damageObject = new DamageObject();
-			
 		}
 
 		public override void Initialize()
 		{
 			PlayerState = State.idle;
 			objectType = "player";
-			//health = HUD.playerMaxHealth;
+			health = HUD.playerMaxHealth;
 
 			if (Door.transitionDirection == "StairTransition") { isOnStairs = true; PlayerState = State.stairs; }
-			accel = 0.75f;
-			friction = 1.2f;
-			maxSpeed = 1.2f;
+			accel = 0.001f;
+			friction = 0.4f;
+			maxSpeed = 1.3f;
 
 
 			damageObject.Initialize();
@@ -149,7 +148,7 @@ namespace Parasol
 				//override player states: can always attack unless already attacking
 				if (playerAttack == true && attackTimer <= 0)
 				{
-					if (PlayerState != State.duck) { PlayerState = State.attack; attackSFX.Play(); }
+					if (PlayerState != State.duck) { PlayerState = State.attack; attackSFX.Play(); stopAnimating = false; }
 					else { PlayerState = State.duckAttack; attackSFX.Play(); }
 				}
 
@@ -173,10 +172,9 @@ namespace Parasol
 					applyGravity = false;
 				}
 
-
-				//are we on the ground
-				var testRect = OnGround(wallMap);
-				if (testRect != Rectangle.Empty) { isOnGround = true; } else { isOnGround = false; }
+				//check for death
+				if (HUD.playerHealth <= 0)
+				{ PlayerState = State.dead; }
 			}
 			objectSprite.Position = position;
 		}
@@ -263,6 +261,7 @@ namespace Parasol
 			{
 				velocity.Y -= jumpHeight;
 				PlayerState = State.jump;
+				isJumping = true;
 			}
 			//switch to duck
 			if (playerDown == true)
@@ -303,6 +302,13 @@ namespace Parasol
 			{
 				MoveRight();
 				objectAnimated.Effect = SpriteEffects.None;
+			}
+			//switch to jump
+			if (playerJump == true && isJumping == false)
+			{
+				velocity.Y -= jumpHeight;
+				PlayerState = State.jump;
+				isJumping = true;
 			}
 			if (isOnGround == false)
 			{
@@ -350,7 +356,7 @@ namespace Parasol
 			{
 				PlayerState = State.fall;
 			}
-
+			isJumping = false;
 			if (playerLeft == true)
 			{
 				MoveLeft();
@@ -466,16 +472,23 @@ namespace Parasol
 			if (!playerUp && !playerDown && !playerLeft && !playerRight)
 			{
 				stopAnimating = true;
-			} 
-			else 
-			{ 
-				stopAnimating = false;  
+			}
+			else
+			{
+				stopAnimating = false;
 			}
 		}
 
 
 		private void Hurt()
-		{ }
+		{
+			if (invincible == false)
+			{ 
+				HUD.playerHealth -= 1;
+				invincibleTimer = invincibleTimerMax;
+			}
+			PlayerState = State.idle;
+		}
 
 
 		private void Dead()
@@ -606,11 +619,11 @@ namespace Parasol
 					{
 						jumpCenter = (topStairTest.Y + topStairTest.Height - ((topStairTest.X + topStairTest.Width) - position.X));
 					}
-
+				
 					if (Math.Round(position.Y) == Math.Round(jumpCenter-15)) {
 						centered = true;
 					} else {
-						position.Y = MathHelper.Lerp(position.Y, jumpCenter-15, .8f);
+						position.Y = MathHelper.Lerp(position.Y, jumpCenter-15, 0.6f);
 					}
 				} else if (!centered) {
 					applyGravity = true;

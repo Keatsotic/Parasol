@@ -275,7 +275,7 @@ namespace Parasol
 		{
  			parallax = (int)Math.Round(Camera.position.X * 0.6f);
 		
-			Matrix layerMg = Matrix.CreateTranslation((Camera.position.X)*0.1f, 0, 0) * Camera.GetTransformMatrix();
+			Matrix layerMg = Matrix.CreateTranslation((Camera.position.X)*0.2f, 0, 0) * Camera.GetTransformMatrix();
 			Matrix layerBg = Matrix.CreateTranslation(parallax-176, 0, 0) * Camera.GetTransformMatrix();
 
 			if (tiledMap.GetLayer("FarBackground") != null)

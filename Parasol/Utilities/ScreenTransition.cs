@@ -16,7 +16,7 @@ namespace Parasol
 		private bool fadeOut;
 		public bool fading;
 		private int fadeAlpha = 0;
-		private const int screenTimerMax = 50;
+		private const int screenTimerMax = 60;
 		private int screenTimer = screenTimerMax;
 
 		public ScreenTransition()

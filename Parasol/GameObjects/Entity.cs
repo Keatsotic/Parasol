@@ -25,21 +25,25 @@ namespace Parasol
 		protected float accel = 0.75f;
 		public float friction = 1.2f;
 		public float maxSpeed = 1.5f;
+		public float pastBoundingBoxBottom;
+		public bool isOnGround;
 
 		//jumping vars
 		protected float gravity = .3f;
 		const float terminalVelocity = 18.0f;
-		protected bool isJumping;
+		public bool isJumping = false;
 		protected const float jumpHeight = 6.0f;
 
 		//init collision object
 		Collision collision = new Collision();
+		protected bool invincible;
+		protected int invincibleTimer;
+		protected int invincibleTimerMax;
 
 		public override void Initialize()
 		{
 			velocity = Vector2.Zero;
 			gravity = gravity * scale;
-			isJumping = false;
 			base.Initialize();
 		}
 
@@ -49,14 +53,23 @@ namespace Parasol
 			{
 				UpdateMovement(objects, wallMap);
 			}
-			
+			if (invincibleTimer >= 0)
+			{
+				invincibleTimer--;
+			}
+
+			//are we on the ground
+			var testRect = OnGround(wallMap);
+			if (testRect != Rectangle.Empty) { isOnGround = true; } else { isOnGround = false; }
 
 			//reset jumping bool
-			if (OnGround(wallMap) != Rectangle.Empty)
+			if (OnGround(wallMap) != Rectangle.Empty && velocity.Y == 0)
 			{
 				isJumping = false;
 			}
 			base.Update(objects, wallMap, gametime);
+
+			pastBoundingBoxBottom = BoundingBox.Bottom;
 		}
 
 		#region Update Movement Checking Methods
@@ -91,15 +104,15 @@ namespace Parasol
 
 		public void ApplyGravity(WallMap wallMap)
 		{
-			if (isJumping == true || OnGround(wallMap) == Rectangle.Empty)
+			if (isJumping == true || ( OnGround(wallMap) == Rectangle.Empty && isJumping == false))
 			{
 				velocity.Y += gravity;
-
+				 
 				if (velocity.Y > terminalVelocity)
 				{
 					velocity.Y = terminalVelocity;
 				}
-			}
+			} 
 		}
 
 		#endregion
@@ -108,7 +121,7 @@ namespace Parasol
 
 		protected void MoveRight()
 		{
-			velocity.X += maxSpeed;// (accel + friction);
+			velocity.X += (accel + friction);
 
 			if (velocity.X > maxSpeed) 
 			{
@@ -119,7 +132,7 @@ namespace Parasol
 
 		protected void MoveLeft()
 		{
-			velocity.X -= maxSpeed;// (accel + friction);
+			velocity.X -= (accel + friction);
 
 			if (velocity.X < -maxSpeed)
 			{
@@ -165,6 +178,8 @@ namespace Parasol
 
 
 			return wallMap.CheckCollision(futureBoundingBox);
+
+			
 		}
 
 		public float TendToZero(float val, float amount)

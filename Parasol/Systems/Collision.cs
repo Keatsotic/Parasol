@@ -11,27 +11,27 @@ using System.Collections.Generic;
 
 namespace Parasol.Systems
 {
-	class Collision 
+	class Collision
 	{
-		public virtual bool CheckCollisions(Entity entity, 
-											WallMap wallMap, 
-											List<GameObject> objects, 
+		public virtual bool CheckCollisions(Entity entity,
+											WallMap wallMap,
+											List<GameObject> objects,
 											bool xAxis)
 		{
 			Rectangle futureBoundingBox = entity.BoundingBox;
 
 			if (xAxis == true && entity.velocity.X != 0)
 			{
-				futureBoundingBox.X += (int)Math.Ceiling(entity.velocity.X);
+				futureBoundingBox.X += (int)Math.Ceiling(entity.maxSpeed) * Math.Sign(entity.velocity.X);
 
 				// pixel perfect x axis collisions
-				var wallCollisionX = wallMap.CheckCollision(futureBoundingBox);
+				Rectangle wallCollisionX = wallMap.CheckCollision(futureBoundingBox);
 
 				if (wallCollisionX != Rectangle.Empty) //if there is a collision xspd away from player...
 				{
 					var hSpd_ = Math.Sign(entity.velocity.X);
 					Rectangle pixelBoundingBox = entity.BoundingBox;
-					
+
 					var pixelCollision = wallMap.CheckCollision(pixelBoundingBox);
 					while (pixelCollision == Rectangle.Empty)
 					{
@@ -43,7 +43,7 @@ namespace Parasol.Systems
 							entity.position.X += hSpd_;
 						}
 					}
-				
+
 					hSpd_ = 0;
 					return true;
 
@@ -55,7 +55,7 @@ namespace Parasol.Systems
 				futureBoundingBox.Y += (int)Math.Ceiling(entity.velocity.Y);
 
 				// pixel perfect y axis collisions
-				var wallCollisionY = wallMap.CheckCollision(futureBoundingBox);
+				Rectangle wallCollisionY = wallMap.CheckCollision(futureBoundingBox);
 
 				if (wallCollisionY != Rectangle.Empty)
 				{
@@ -124,5 +124,6 @@ namespace Parasol.Systems
 			}
 
 		}
+
 	}
 }

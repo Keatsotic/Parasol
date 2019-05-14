@@ -31,6 +31,7 @@ namespace Parasol
 
 		public override void Initialize()
 		{
+			playerHealth = playerMaxHealth;
 			rupeeDisplay = rupeeCount;
 			base.Initialize();
 		}
@@ -43,18 +44,18 @@ namespace Parasol
 				rupeeCount -= 100;
 			}
 			RupeeAddition();
-			textBox.Update(_objects, wallMap, gameTime);
+			//textBox.Update(_objects, wallMap, gameTime);
 			base.Update(_objects, wallMap, gameTime);
 		}
 
 		public override void Load(ContentManager content)
 		{
-			font = content.Load<SpriteFont>("Fonts/megaman");
-			healthFullTexture = content.Load<Texture2D>("Sprites/HUD/playerHealthFull");
-			healthEmptyTexture = content.Load<Texture2D>("Sprites/HUD/playerHealthEmpty");
-			livesTexture = content.Load<Texture2D>("Sprites/HUD/playerLives");
-			rupeeTexture = content.Load<Texture2D>("Sprites/Destructibles/rupee");
-			textBox.Load(content);
+			font = content.Load<SpriteFont>("Fonts/DefaultFont");
+			healthFullTexture = content.Load<Texture2D>("Sprites/HUD/healthFullTexture");
+			healthEmptyTexture = content.Load<Texture2D>("Sprites/HUD/healthEmptyTexture");
+			livesTexture = content.Load<Texture2D>("Sprites/HUD/s_playerLives");
+			rupeeTexture = content.Load<Texture2D>("Sprites/HUD/rupee");
+			//textBox.Load(content);
 		}
 
 		public override void Draw(SpriteBatch spriteBatch)
@@ -71,11 +72,11 @@ namespace Parasol
 				{
 					spriteBatch.Draw(healthFullTexture, new Vector2(12 + (i * 16), 12), Color.White);
 				}
-				spriteBatch.Draw(livesTexture, new Vector2(12, 32), Color.White);
-				spriteBatch.DrawString(font, "X " + playerLives, new Vector2(32, 32), Color.White);
+				spriteBatch.Draw(livesTexture, new Vector2(16, 32), Color.White);
+				spriteBatch.DrawString(font,""+ playerLives, new Vector2(32, 32), Color.White);
 
-				spriteBatch.Draw(rupeeTexture, new Vector2(330, 16), Color.White);
-				spriteBatch.DrawString(font, "X " + rupeeDisplay, new Vector2(350, 16), Color.White);
+				spriteBatch.Draw(rupeeTexture, new Vector2(450, 16), Color.White);
+				spriteBatch.DrawString(font,""+ rupeeDisplay, new Vector2(440, 16), Color.White);
 
 
 				textBox.Draw(spriteBatch);

@@ -35,12 +35,11 @@ namespace Parasol
 		
 			for (int i = 0; i < walls.Count; i++)
 			{
-				if (walls[i] != null && 
-				walls[i].wall.Intersects(input) == true)
-
-				{ return walls[i].wall; }
+				if (walls[i] != null && walls[i].wall.Intersects(input) == true)
+				{
+					return walls[i].wall; 
+				}
 			}
-			
 			return Rectangle.Empty;
 		}
 

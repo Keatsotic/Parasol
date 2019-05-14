@@ -16,8 +16,9 @@ namespace Parasol
         SpriteBatch spriteBatch;
 
 		//init scenemanager
-		public SceneManager sceneManager = new SceneManager();
-		public ScreenTransition screenTransition = new ScreenTransition();
+		private SceneManager sceneManager = new SceneManager();
+		private ScreenTransition screenTransition = new ScreenTransition();
+		private HUD hud = new HUD();
 
 		//int level vars
 		public static string levelNumber = "1";
@@ -37,7 +38,7 @@ namespace Parasol
 			//set the resolution
 
 			Resolution.Init(ref graphics);
-			Resolution.SetVirtualResolution(400, 240);
+			Resolution.SetVirtualResolution(480, 270);
 			Resolution.SetResolution(1920, 1080, false);
 
 		}
@@ -51,6 +52,8 @@ namespace Parasol
 			Camera.Initialize();
 			Camera.cameraOffset = new Vector2(Resolution.VirtualWidth / 2, Resolution.VirtualHeight / 2);
 			graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+			hud.Initialize();
+
 			IsFixedTimeStep = true;
 			TargetElapsedTime = TimeSpan.FromSeconds(1f / 60f);
 			base.Initialize();
@@ -60,6 +63,7 @@ namespace Parasol
 		protected override void LoadContent()
 		{
 			// TODO: use this.Content to load your game content here
+			hud.Load(Content);
 			screenTransition.Load(Content);
 			spriteBatch = new SpriteBatch(GraphicsDevice);
 			sceneManager.LoadLevel(Content, graphics, objects, levelNumber, roomNumber, true);
@@ -83,6 +87,7 @@ namespace Parasol
 			if (Door.doorEnter == true) { screenTransition.StartScreenTransition(objects, graphics, Content, sceneManager, Door.transitionDirection, roomNumber); }
 
 			//update input values
+			hud.Update(objects, null, gameTime);
 			UpdateObjects(gameTime);
 			UpdateCamera();
 			base.Update(gameTime);
@@ -93,7 +98,7 @@ namespace Parasol
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-
+		
 			// TODO: Add your drawing code here
 			Resolution.BeginDraw();
 			spriteBatch.Begin(SpriteSortMode.BackToFront,
@@ -103,10 +108,13 @@ namespace Parasol
 								null,
 								null,
 								Camera.GetTransformMatrix());
+
+			
 			sceneManager.Draw();
 			DrawObjects();
 			screenTransition.Draw(spriteBatch);
 			spriteBatch.End();
+			hud.Draw(spriteBatch);
 			base.Draw(gameTime);
         }
 
