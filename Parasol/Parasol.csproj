@@ -75,6 +75,7 @@
     <Compile Include="GameObjects\Enemy.cs" />
     <Compile Include="GameObjects\Entity.cs" />
     <Compile Include="GameObjects\GameObject.cs" />
+    <Compile Include="GameObjects\PatrolEnemy.cs" />
     <Compile Include="GameObjects\Player.cs" />
     <Compile Include="GameObjects\PlayerOverworld.cs" />
     <Compile Include="Program.cs" />

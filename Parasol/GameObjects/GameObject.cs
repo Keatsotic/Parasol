@@ -20,13 +20,19 @@ namespace Parasol
 		public float layerDepth = 0.5f;
 
 		//will it be affected by walls
+		public Vector2 velocity;
 		public bool canCollide = true;
 		public bool active = true;
-		public bool canMove = true;
+		public bool isHurt = false;
+
+		public Vector2 knockbackDir = new Vector2(1, 1);
+		public Vector2 knockback;
 
 		public Vector2 direction;
 		protected Vector2 origin;
 
+		public bool invincible = false;
+		protected AnimatedSprite objectAnimated;
 		protected Sprite objectSprite = null;
 
 		//type identifier
@@ -100,7 +106,7 @@ namespace Parasol
 								Vector2.Zero,
 								1f,
 								SpriteEffects.None,
-								0.1f);
+								0.2f);
 			}
 
 			//draw object

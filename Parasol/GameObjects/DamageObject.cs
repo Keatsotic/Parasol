@@ -25,6 +25,7 @@ namespace Parasol
 
 		public DamageObject(Vector2 inputPosition)
 		{
+			objectType = "Damage";
 			position = inputPosition;
 			active = false;
 		}
@@ -46,16 +47,17 @@ namespace Parasol
 
 		public override void Update(List<GameObject> objects, WallMap wallMap, GameTime gametime)
 		{
-			if (timer <= 0 && active == true)
+			if (timer > 0 && active == true)
 			{
-				active = false;
-				objects.Remove(this);
+				timer--;
+				CheckCollision(objects, wallMap);
 			} 
 			else 
 			{
-				timer--;
+				active = false;
 			}
-
+			damageBoundingBox.X = (int)position.X;
+			damageBoundingBox.Y = (int)position.Y;
 			base.Update(objects, wallMap, gametime);
 		}
 
@@ -81,6 +83,28 @@ namespace Parasol
 		public void StartTimer()
 		{
 			timer = maxTimer;
+		}
+
+		private void CheckCollision(List<GameObject> objects, WallMap wallMap)
+		{
+			for (int i = 0; i < objects.Count; i++)
+			{
+				if (objects[i].objectType == "Enemy" && objects[i].CheckCollision(damageBoundingBox) == true)
+				{
+					if (objects[0].position.X > objects[i].BoundingBox.X)
+					{
+						objects[0].knockbackDir.X = 1;
+					}
+					else
+					{
+						objects[0].knockbackDir.X = -1;
+					}
+					active = false;
+					objects[0].velocity.X = 0;
+					objects[0].velocity = objects[i].knockback * objects[0].knockbackDir;
+					objects[i].isHurt = true;
+				}
+			}
 		}
 	}
 }

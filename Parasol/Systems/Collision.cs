@@ -86,10 +86,40 @@ namespace Parasol.Systems
 			{
 				if (objects[i] != entity &&
 					objects[i].active == true &&
-					objects[i].canCollide == true &&
 					objects[i].CheckCollision(futureBoundingBox) == true)
 				{
-					return true;
+					if ((objects[i].objectType == "Enemy") || (objects[i].objectType == "Player"))
+					{
+						if (entity.objectType == "Player" && !entity.invincible)
+						{
+							if (entity.BoundingBox.X > objects[i].BoundingBox.X)
+							{
+								entity.knockbackDir.X = 1;
+							} 
+							else 
+							{
+								entity.knockbackDir.X = -1;
+							}
+							entity.isHurt = true;
+						}
+						if (entity.objectType == "Enemy" && objects[i].objectType != "Enemy" && !objects[i].invincible)
+						{
+							if (entity.BoundingBox.X > objects[i].BoundingBox.X)
+							{
+								objects[i].knockbackDir.X = -1;
+							}
+							else
+							{
+								objects[i].knockbackDir.X = 1;
+							}
+							objects[i].isHurt = true;
+						}
+					}
+					if (objects[i].objectType == "Damage")
+					{
+						entity.isHurt = true;
+					}
+					return false;
 				}
 			}
 			return false;

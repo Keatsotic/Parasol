@@ -30,6 +30,9 @@ namespace Parasol
 		public static List<string> destroyedPermanent = new List<string>();
 		static public int saveSlot;
 
+		//mgmt vars
+		public static bool reLoad = false;
+
 		public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -40,7 +43,6 @@ namespace Parasol
 			Resolution.Init(ref graphics);
 			Resolution.SetVirtualResolution(480, 270);
 			Resolution.SetResolution(1920, 1080, false);
-
 		}
 
 
@@ -84,7 +86,7 @@ namespace Parasol
                 Exit();
 			
 				//check for door collisions
-			if (Door.doorEnter == true) { screenTransition.StartScreenTransition(objects, graphics, Content, sceneManager, Door.transitionDirection, roomNumber); }
+			if (Door.doorEnter == true || reLoad) { screenTransition.StartScreenTransition(objects, graphics, Content, sceneManager, Door.transitionDirection, roomNumber); }
 
 			//update input values
 			hud.Update(objects, null, gameTime);
@@ -110,8 +112,8 @@ namespace Parasol
 								Camera.GetTransformMatrix());
 
 			
-			sceneManager.Draw();
 			DrawObjects();
+			sceneManager.Draw();
 			screenTransition.Draw(spriteBatch);
 			spriteBatch.End();
 			hud.Draw(spriteBatch);
@@ -121,12 +123,10 @@ namespace Parasol
 		//camera methods
 		private void UpdateCamera()
 		{
-			//Camera.LookAt(new Vector2(0, 0));
-			if (objects.Count == 0) { return; }
+			
+			if (objects.Count == 0) { return;  }
 			Camera.Update(objects[0].position + new Vector2(16, 0));
 		}
-
-
 
 		#region Object List Methods
 

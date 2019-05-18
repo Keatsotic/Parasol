@@ -50,30 +50,38 @@ namespace Parasol
 			{
 				if (doors[i] != null && doors[i].door.Intersects(input))
 				{
+					HUD.canMove = false;
 					Door.doorEnter = true;
 					if (Game1.levelNumber == "Overworld" || doors[i].nextRoomNumber == "Overworld")
 					{
-						Game1.levelNumber = doors[i].nextRoomNumber;
 						Game1.roomNumber = "1";
+						Game1.levelNumber = doors[i].nextRoomNumber;
 						Door.transitionDirection = "Fade";
 					}
 					else
 					{
-						if (input.Top < doors[i].door.Top || input.Bottom > doors[i].door.Bottom)
+						//if (input.Top < doors[i].door.Top || input.Bottom > doors[i].door.Bottom)
+						//{
+						//	Door.transitionDirection = "StairTransition";
+						//}
+
+						if (input.Top < doors[i].door.Top)
 						{
-							Door.transitionDirection = "StairTransition";
-							Game1.roomNumber = doors[i].nextRoomNumber;
+							Door.transitionDirection = "Down";
+						}
+						else if (input.Bottom > doors[i].door.Bottom)
+						{
+							Door.transitionDirection = "Up";
 						}
 						else if (input.Left < doors[i].door.Left)
 						{
 							Door.transitionDirection = "Left";
-							Game1.roomNumber = doors[i].nextRoomNumber;
 						}
 						else if (input.Left > doors[i].door.Left)
 						{
 							Door.transitionDirection = "Right";
-							Game1.roomNumber = doors[i].nextRoomNumber;
 						}
+						Game1.roomNumber = doors[i].nextRoomNumber;
 					}
 					return doors[i].door;
 				}

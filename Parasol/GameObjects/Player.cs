@@ -23,9 +23,11 @@ namespace Parasol
 			idle,
 			walk, 
 			jump,
+			wallJump,
 			fall,
 			attack,
 			jumpAttack,
+			wallAttack,
 			duck, 
 			duckAttack,
 			hurt,
@@ -39,6 +41,8 @@ namespace Parasol
 		private bool playerDown;
 		private bool playerLeft;
 		private bool playerRight;
+		private int wallDir;
+		private bool isWallJumping;
 
 		//actions
 		private bool playerAttack;
@@ -47,13 +51,12 @@ namespace Parasol
 		private bool playerMenu;
 
 		public State PlayerState { get; set; }
-		public AnimatedSprite objectAnimated;
 		private bool stopAnimating = false;
 
 		private int attackTimer;
 		private const int maxTimer = 10;
-	
 
+		//stair vars
 		private bool isOnStairs = false;
 		private bool jumpOnStairs = false;
 		private bool centered = false;
@@ -81,17 +84,15 @@ namespace Parasol
 		public override void Initialize()
 		{
 			PlayerState = State.idle;
-			objectType = "player";
-			health = HUD.playerMaxHealth;
+			objectType = "Player";
 
 			if (Door.transitionDirection == "StairTransition") { isOnStairs = true; PlayerState = State.stairs; }
-			accel = 0.001f;
-			friction = 0.4f;
-			maxSpeed = 1.3f;
-
+			accel = 0.1f;
+			friction = 0.3f;
+			maxSpeed = 1.5f;
+			knockback = new Vector2(5, -3);
 
 			damageObject.Initialize();
-
 
 			base.Initialize();
 		}
@@ -118,14 +119,16 @@ namespace Parasol
 			animationFactory.Add("duck", new SpriteSheetAnimationData(new[] { 6 }));
 			animationFactory.Add("attack", new SpriteSheetAnimationData(new[] { 8, 9, 10 }, frameDuration: 0.1f, isLooping: false));
 			animationFactory.Add("duckAttack", new SpriteSheetAnimationData(new[] { 12, 13, 14 }, frameDuration: 0.1f, isLooping: false));
-			
+			animationFactory.Add("walljump", new SpriteSheetAnimationData(new[] { 15 }));
+			animationFactory.Add("wallAttack", new SpriteSheetAnimationData(new[] { 16, 17, 18 }, frameDuration: 0.1f, isLooping: false));
+
 			#endregion
 
 
 			objectAnimated = new AnimatedSprite(animationFactory, "idle");
 			objectSprite = objectAnimated;
 
-			attackSFX = content.Load<SoundEffect>("Sounds/sfx/a_attack2");
+			attackSFX = content.Load<SoundEffect>("Sounds/sfx/a_attack");
 
 			base.Load(content);
 
@@ -137,7 +140,14 @@ namespace Parasol
 
 		public override void Update(List<GameObject> objects, WallMap wallMap, GameTime gametime)
 		{
-			if (!Door.doorEnter)
+			//apply friction
+			velocity.X = TendToZero(velocity.X, friction);
+
+			//check for death
+			if (HUD.playerHealth <= 0)
+			{ PlayerState = State.dead; }
+
+			if (HUD.canMove)
 			{
 				//Check Input
 				PlayerInput();
@@ -148,11 +158,26 @@ namespace Parasol
 				//override player states: can always attack unless already attacking
 				if (playerAttack == true && attackTimer <= 0)
 				{
-					if (PlayerState != State.duck) { PlayerState = State.attack; attackSFX.Play(); stopAnimating = false; }
-					else { PlayerState = State.duckAttack; attackSFX.Play(); }
+					if (PlayerState == State.wallJump) 
+					{ 
+						isWallJumping = true; 
+						direction = -direction; 
+						PlayerState = State.wallAttack;
+					}
+					else if (PlayerState != State.duck) 
+					{ 
+						PlayerState = State.attack; 
+						stopAnimating = false; 
+					}
+					else 
+					{ 
+						PlayerState = State.duckAttack; 
+					}
+					attackSFX.Play();
 				}
 
 				if (attackTimer > 0) { attackTimer--; }
+
 				//update the damage object
 				damageObject.Update(objects, wallMap, gametime);
 
@@ -172,9 +197,28 @@ namespace Parasol
 					applyGravity = false;
 				}
 
-				//check for death
-				if (HUD.playerHealth <= 0)
-				{ PlayerState = State.dead; }
+				// invincible timer
+				if (isHurt && !invincible)
+				{
+					PlayerState = State.hurt;
+					isHurt = false;
+					invincibleTimer = invincibleTimerMax;
+				}
+
+				//invincibility timer
+				if (invincibleTimer > 0)
+				{
+					if (invincibleTimer % 2 == 0)
+					{ objectAnimated.Color = new Color(0, 0, 0, 0); }
+					else { objectAnimated.Color = new Color(255, 255, 255, 255); }
+					
+					invincibleTimer--;
+					if  (invincibleTimer <= 0)
+					{
+						isHurt = false;
+						invincible = false;
+					}
+				}
 			}
 			objectSprite.Position = position;
 		}
@@ -204,6 +248,10 @@ namespace Parasol
 					Jump(wallMap);
 					objectAnimated.Play("jump");
 					break;
+				case State.wallJump:
+					WallJump(wallMap);
+					objectAnimated.Play("walljump");
+					break;
 				case State.fall:
 					Fall(wallMap);
 					objectAnimated.Play("fall");
@@ -211,8 +259,14 @@ namespace Parasol
 				case State.attack:
 					Attack(objects, wallMap);
 					var returnState = State.idle;
-					if (isOnStairs == true) { returnState = State.stairs; }
-					objectAnimated.Play("attack", () => PlayerState = returnState );
+					if (isOnStairs == true) { returnState = State.stairs; } 
+					objectAnimated.Play("attack", () => PlayerState = returnState);
+					break;
+				case State.wallAttack:
+					WallAttack(objects, wallMap);
+					var returnState2 = State.wallJump;
+					if (isOnGround == true) { returnState = State.idle; }
+					objectAnimated.Play("wallAttack", () => PlayerState = returnState2);
 					break;
 				case State.jumpAttack:
 					objectAnimated.Play("jumpAttack", () => PlayerState = State.fall);
@@ -231,7 +285,7 @@ namespace Parasol
 					break;
 				case State.hurt:
 					Hurt();
-					objectAnimated.Play("hurt", () => PlayerState = State.idle);
+					objectAnimated.Play("jump");
 					break;
 				case State.dead:
 					Dead();
@@ -247,10 +301,7 @@ namespace Parasol
 		// individual player states:
 
 		private void Idle(WallMap wallMap)
-		{
-			//stop moving
-			velocity.X = TendToZero(velocity.X, friction);
-
+		{ 
 			//switch to walk
 			if (playerLeft == true || playerRight == true)
 			{
@@ -360,10 +411,19 @@ namespace Parasol
 			if (playerLeft == true)
 			{
 				MoveLeft();
+				objectAnimated.Effect = SpriteEffects.FlipHorizontally;
 			}
 			if (playerRight == true)
 			{
 				MoveRight();
+				objectAnimated.Effect = SpriteEffects.None;
+			}
+			//wall jump
+			if (playerJump && CanWallJump(wallMap) != Rectangle.Empty)
+			{
+				wallDir = (int)direction.X;
+				PlayerState = State.wallJump;
+				velocity.Y = 0;
 			}
 		}
 
@@ -384,6 +444,13 @@ namespace Parasol
 			{
 				MoveRight();
 			}
+			//walljump
+			if (CanWallJump(wallMap) != Rectangle.Empty && (playerLeft || playerRight))
+			{
+				wallDir = (int)direction.X;
+				PlayerState = State.wallJump;
+				velocity.Y = 0;
+			}
 
 			// climb stairs if contacting
 			if (playerUp == true)
@@ -399,6 +466,46 @@ namespace Parasol
 		}
 
 
+		private void WallJump(WallMap wallMap)
+		{
+			//applyGravity = false;
+			isWallJumping = false;
+			velocity.Y -= 0.28f;
+			isJumping = false;
+
+			if (playerJump)
+			{
+				velocity.Y = 0;
+				velocity.Y -= 5f;
+				velocity.X -= jumpHeight / 4 * direction.X;
+				PlayerState = State.jump;
+				direction = -direction;
+				isJumping = true;
+			}
+			// adjust facing direction
+			if (playerLeft)
+			{
+				direction.X = -1;
+				objectAnimated.Effect = SpriteEffects.FlipHorizontally;
+			}
+			if (playerRight)
+			{
+				direction.X = 1;
+				objectAnimated.Effect = SpriteEffects.None;
+			}
+
+			if ((!playerRight && !playerLeft) || (CanWallJump(wallMap) == Rectangle.Empty) || (wallDir != (int)direction.X))
+			{
+				PlayerState = State.fall;
+			}
+			if (isOnGround)
+			{
+				PlayerState = State.idle;
+			}
+
+		}
+
+
 		private void Attack(List<GameObject> objects, WallMap wallMap)
 		{
 
@@ -408,10 +515,11 @@ namespace Parasol
 				damageObject.active = true;
 				attackTimer = maxTimer;
 			}
+
 			damageObject.position = position + (new Vector2(18 + (Math.Abs(velocity.X) * 2), 0) * direction);
 
-			if (isOnGround != true && !isOnStairs)
-			{
+			if (!isOnGround && !isOnStairs && !isWallJumping)
+			{ 
 				if (playerLeft == true)
 				{
 					MoveLeft();
@@ -423,13 +531,13 @@ namespace Parasol
 					objectAnimated.Effect = SpriteEffects.None;
 				}
 			}
-			else
+			else if (isOnGround)
 			{
 				velocity.X = TendToZero(velocity.X, friction);
 			}
 
 		}
-
+		 
 
 		private void DuckAttack(List<GameObject> objects, WallMap wallMap)
 		{
@@ -439,6 +547,28 @@ namespace Parasol
 				damageObject.StartTimer();
 				damageObject.active = true;
 				attackTimer = maxTimer;
+			}
+		}
+
+
+		private void WallAttack(List<GameObject> objects, WallMap wallMap)
+		{
+			velocity.Y -= 0.28f;
+
+			if (attackTimer <= 0)
+			{
+				damageObject.position = position + new Vector2(0, 6) + (new Vector2(18, 0) * direction);
+				damageObject.StartTimer();
+				damageObject.active = true;
+				attackTimer = maxTimer;
+			}
+
+			damageObject.position = position + (new Vector2(18 + (Math.Abs(velocity.X) * 2), 0) * direction);
+
+			if (isOnGround)
+			{
+				PlayerState = State.wallJump;
+				isWallJumping = false;
 			}
 		}
 
@@ -485,14 +615,22 @@ namespace Parasol
 			if (invincible == false)
 			{ 
 				HUD.playerHealth -= 1;
-				invincibleTimer = invincibleTimerMax;
+				invincible = true;
+				velocity = Vector2.Zero;
+				velocity += knockback * knockbackDir;
 			}
 			PlayerState = State.idle;
 		}
 
 
 		private void Dead()
-		{ }
+		{
+			objectAnimated.Effect = SpriteEffects.FlipVertically;
+			Game1.reLoad = true;
+			Door.transitionDirection = "Fade";
+			PlayerState = State.idle;
+			HUD.playerHealth = HUD.playerMaxHealth;
+		}
 			
 		#endregion
 
@@ -517,11 +655,22 @@ namespace Parasol
 			playerSpecial = Input.KeyPressed(Keys.B) == true || GamePad.GetState(PlayerIndex.One).Buttons.Y == ButtonState.Pressed;
 			playerMenu = Input.KeyPressed(Keys.Enter) == true || GamePad.GetState(PlayerIndex.One).Buttons.X == ButtonState.Pressed;
 		}
-		
+
 
 		#endregion
 
-		#region HELPER METHODS
+		#region HELPER METHODS 
+
+		protected Rectangle CanWallJump(WallMap wallMap)
+		{
+			Rectangle futureBoundingBox = new Rectangle((int)(BoundingBox.X + (1*direction.X)),
+														(int)(BoundingBox.Y + 4),
+														(int)(BoundingBox.Width),
+														(int)(BoundingBox.Height-14));
+
+
+			return wallMap.CheckCollision(futureBoundingBox);
+		}
 
 		protected Rectangle AtTopOfStairs(WallMap wallMap)
 		{

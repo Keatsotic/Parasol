@@ -75,7 +75,7 @@ namespace Parasol
 			{
 				for (int i = 0; i < _objects.Count; i++)
 				{
-					_objects[i].canMove = false;
+					HUD.canMove = false;
 				}
 				if (textIterator < textBoxText[itereator].Length && textSpeed <= 0)
 				{
@@ -101,7 +101,7 @@ namespace Parasol
 			{
 				for (int i = 0; i < _objects.Count; i++)
 				{
-					_objects[i].canMove = true;
+					HUD.canMove = true;
 				}
 			}
 

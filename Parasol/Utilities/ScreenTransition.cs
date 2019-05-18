@@ -56,13 +56,13 @@ namespace Parasol
 			//sliding screens
 			// if we are transitioning to a level and not a room, the number of chars in the room will be more than 3, 
 			//so the room number will be the level number instead
-			if (transitionDirection == "Left" || transitionDirection == "Right")
+			if (transitionDirection == "Left" || transitionDirection == "Right" || transitionDirection == "Up" || transitionDirection == "Down")
 			{
 				if (transitionDirection == "Left")
 				{
 					Camera.cameraMin.X = Camera.position.X;
 					objects[0].position.Y = objects[0].position.Y;
-					objects[0].position.X += 0.9f;
+					objects[0].position.X += 0.4f;
 					Camera.cameraMin.X += 8;
 					Camera.cameraMax.X += 8;
 				}
@@ -70,15 +70,32 @@ namespace Parasol
 				{
 					Camera.cameraMax.X = Camera.position.X;
 					objects[0].position.Y = objects[0].position.Y;
-					objects[0].position.X -= 0.9f;
+					objects[0].position.X -= 0.4f;
 					Camera.cameraMin.X -= 8;
 					Camera.cameraMax.X -= 8;
+				}
+				if (transitionDirection == "Up")
+				{ 
+					Camera.cameraMin.X = Camera.position.X;
+					objects[0].position.Y -= 0.5f;
+					objects[0].position.X = objects[0].position.X;
+					Camera.cameraMin.Y -= 4f;
+					Camera.cameraMax.Y -= 4f;
+				}
+				if (transitionDirection == "Down")
+				{
+					Camera.cameraMin.X = Camera.position.X;
+					objects[0].position.Y += 0.5f;
+					objects[0].position.X = objects[0].position.X;
+					Camera.cameraMin.Y += 4f;
+					Camera.cameraMax.Y += 4f;
 				}
 				screenTimer--;
 
 				if (screenTimer < 0)
 				{
 					sceneManager.UnloadObjects(false, objects);
+					HUD.canMove = true;
 					Door.doorEnter = false;
 					screenTimer = screenTimerMax;
 					objects[0].applyGravity = true;
@@ -90,6 +107,7 @@ namespace Parasol
 			if (transitionDirection == "StairTransition") // change rooms while staying on the stairs
 			{
 				sceneManager.UnloadObjects(true, objects);
+				HUD.canMove = true;
 				Door.doorEnter = false;
 				screenTimer = screenTimerMax;
 				sceneManager.LoadLevel(content, graphics, objects, Game1.levelNumber, Game1.roomNumber, false);
@@ -141,7 +159,9 @@ namespace Parasol
 
 				if (fadeAlpha <= 0)
 				{
+					HUD.canMove = true;
 					Door.doorEnter = false;
+					Game1.reLoad = false;
 					fadeOut = false;
 					fadeIn = true;
 					fading = false;

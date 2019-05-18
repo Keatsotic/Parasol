@@ -31,19 +31,16 @@ namespace Parasol
 		private bool playerMenu;
 
 		public State PlayerState { get; set; }
-		public AnimatedSprite objectAnimated;
-
 
 		public PlayerOverworld(Vector2 initPosition)
 		{
 			position = initPosition;
-			applyGravity = false;
 		}
 
 		public override void Initialize()
 		{
 			PlayerState = State.idle;
-			objectType = "player";
+			objectType = "Player";
 			//health = HUD.playerMaxHealth;
 
 			accel = 0.75f;
@@ -83,7 +80,7 @@ namespace Parasol
 
 		public override void Update(List<GameObject> objects, WallMap wallMap, GameTime gametime)
 		{
-			if (!Door.doorEnter)
+			if (HUD.canMove)
 			{
 				//Check Input
 				PlayerInput();

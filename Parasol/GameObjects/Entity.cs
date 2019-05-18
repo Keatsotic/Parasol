@@ -21,7 +21,6 @@ namespace Parasol
 		protected int health = 5;
 
 		//movement vars
-		public Vector2 velocity;
 		protected float accel = 0.75f;
 		public float friction = 1.2f;
 		public float maxSpeed = 1.5f;
@@ -36,26 +35,21 @@ namespace Parasol
 
 		//init collision object
 		Collision collision = new Collision();
-		protected bool invincible;
-		protected int invincibleTimer;
-		protected int invincibleTimerMax;
+
+		protected int invincibleTimer = 0;
+		protected int invincibleTimerMax = 60;
 
 		public override void Initialize()
 		{
 			velocity = Vector2.Zero;
-			gravity = gravity * scale;
 			base.Initialize();
 		}
 
 		public override void Update(List<GameObject> objects, WallMap wallMap, GameTime gametime)
 		{
-			if (canMove == true)
+			if (HUD.canMove == true)
 			{
 				UpdateMovement(objects, wallMap);
-			}
-			if (invincibleTimer >= 0)
-			{
-				invincibleTimer--;
 			}
 
 			//are we on the ground
@@ -63,7 +57,7 @@ namespace Parasol
 			if (testRect != Rectangle.Empty) { isOnGround = true; } else { isOnGround = false; }
 
 			//reset jumping bool
-			if (OnGround(wallMap) != Rectangle.Empty && velocity.Y == 0)
+			if (OnGround(wallMap) != Rectangle.Empty)
 			{
 				isJumping = false;
 			}

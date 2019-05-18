@@ -69,7 +69,7 @@ namespace Parasol
 			}
 
 			levelNumberHolder = levelNumber;
-			
+
 
 			//Load and Draw the map and walls
 			wallMap.Load(content);
@@ -91,6 +91,7 @@ namespace Parasol
 			{
 				for (int i = 0; i < objectLayer.Objects.Length; i++)
 				{
+					// create player 
 					if (objectLayer.Objects[i].Type == "Player" && objects.Count == 0)
 					{
 						if (Door.transitionDirection == "StairTransition")
@@ -109,8 +110,9 @@ namespace Parasol
 							{
 								objects.Add(new Player(new Vector2(objectLayer.Objects[i].Position.X,
 																				objectLayer.Objects[i].Position.Y)));
-							} 
-							else 
+
+							}
+							else
 							{
 								objects.Add(new PlayerOverworld(new Vector2(objectLayer.Objects[i].Position.X,
 																					objectLayer.Objects[i].Position.Y)));
@@ -123,6 +125,16 @@ namespace Parasol
 							objects[0].Load(content);
 						}
 					}
+
+					//create enemies
+					if (objectLayer.Objects[i].Type == "Enemy")
+					{
+						objects.Add(new PatrolEnemy(new Vector2(objectLayer.Objects[i].Position.X,
+														objectLayer.Objects[i].Position.Y)));
+
+					}
+
+					// create camera and min max values
 					if (objectLayer.Objects[i].Type == "Camera") // set camera max and min
 					{
 						if (objectLayer.Objects[i].Name == "cameraMin")
@@ -134,17 +146,6 @@ namespace Parasol
 						{
 							Camera.cameraMax = objectLayer.Objects[i].Position - Camera.cameraOffset;
 							roomMax = objectLayer.Objects[i].Position;
-						}
-					}
-					if (objectLayer.Objects[i].Type == "CameraRestrict") //set camera restrictions
-					{
-						if (objectLayer.Objects[i].Name == "Horizontal")
-						{
-							Camera.updateYAxis = false;
-						}
-						if (objectLayer.Objects[i].Name == "Vertical")
-						{
-							Camera.updateYAxis = true;
 						}
 					}
 					if (objectLayer.Objects[i].Type == "Door") // make doors
@@ -164,9 +165,9 @@ namespace Parasol
 				{
 					for (var j = 0; j < tiledMapWallsLayer.Height; j++)
 					{
-						if ((i > (roomMin.X - tiledMapWallsLayer.TileWidth) / tiledMapWallsLayer.TileWidth && 
-						j > (roomMin.Y - tiledMapWallsLayer.TileHeight) / tiledMapWallsLayer.TileHeight) && 
-						(i <= (roomMax.X + tiledMapWallsLayer.TileWidth) / tiledMapWallsLayer.TileWidth && 
+						if ((i > (roomMin.X - tiledMapWallsLayer.TileWidth) / tiledMapWallsLayer.TileWidth &&
+						j > (roomMin.Y - tiledMapWallsLayer.TileHeight) / tiledMapWallsLayer.TileHeight) &&
+						(i <= (roomMax.X + tiledMapWallsLayer.TileWidth) / tiledMapWallsLayer.TileWidth &&
 						j <= (roomMax.Y + tiledMapWallsLayer.TileHeight) / tiledMapWallsLayer.TileHeight))
 						{
 							if (tiledMapWallsLayer.TryGetTile(i, j, out TiledMapTile? tile))
@@ -179,38 +180,29 @@ namespace Parasol
 																			tiledMapWallsLayer.TileHeight)));
 								}
 							}
-						}
-					}
-				}
-			}
-			if (tiledMapInteractLayer != null)
-			{
-				for (var i = 0; i < tiledMapInteractLayer.Width; i++)
-				{
-					for (var j = 0; j < tiledMapInteractLayer.Height; j++)
-					{
-						if ((i >= roomMin.X / tiledMapInteractLayer.TileWidth && j >= roomMin.Y / tiledMapInteractLayer.TileHeight) && (i <= roomMax.X / tiledMapInteractLayer.TileWidth && j <= roomMax.Y / tiledMapInteractLayer.TileHeight))
-						{
-							if (tiledMapInteractLayer.TryGetTile(i, j, out TiledMapTile? tile))
+							if (tiledMapInteractLayer != null)
 							{
-								if (tile.Value.GlobalIdentifier == 2) // make stairs
+								if (tiledMapInteractLayer.TryGetTile(i, j, out TiledMapTile? itile))
 								{
-									//use for stair directions
-									if (!tile.Value.IsFlippedHorizontally)
+									if (itile.Value.GlobalIdentifier == 2) // make stairs
 									{
-										wallMap.stairs.Add(new Stair(new Rectangle(i * tiledMapInteractLayer.TileWidth,
-																				j * tiledMapInteractLayer.TileHeight,
-																				tiledMapInteractLayer.TileWidth,
-																				tiledMapInteractLayer.TileHeight)));
-									}
-									else
-									{
-										wallMap.stairs.Add(new Stair(new Rectangle(i * tiledMapInteractLayer.TileWidth,
+										//use for stair directions
+										if (!itile.Value.IsFlippedHorizontally)
+										{
+											wallMap.stairs.Add(new Stair(new Rectangle(i * tiledMapInteractLayer.TileWidth,
 																					j * tiledMapInteractLayer.TileHeight,
 																					tiledMapInteractLayer.TileWidth,
-																					tiledMapInteractLayer.TileHeight), false));
-
+																					tiledMapInteractLayer.TileHeight)));
+										}
+										else
+										{
+											wallMap.stairs.Add(new Stair(new Rectangle(i * tiledMapInteractLayer.TileWidth,
+																						j * tiledMapInteractLayer.TileHeight,
+																						tiledMapInteractLayer.TileWidth,
+																						tiledMapInteractLayer.TileHeight), false));
+										}
 									}
+
 								}
 							}
 						}
@@ -230,7 +222,7 @@ namespace Parasol
 			}
 		}
 
-		
+
 		public void UnloadObjects(bool killPlayer, List<GameObject> objects)
 		{
 			Game1.previousLevel = Game1.levelNumber;
@@ -273,26 +265,37 @@ namespace Parasol
 
 		public void Draw()
 		{
- 			parallax = (int)Math.Round(Camera.position.X * 0.6f);
-		
-			Matrix layerMg = Matrix.CreateTranslation((Camera.position.X)*0.2f, 0, 0) * Camera.GetTransformMatrix();
-			Matrix layerBg = Matrix.CreateTranslation(parallax-176, 0, 0) * Camera.GetTransformMatrix();
+			//parallax = (int)Math.Round(Camera.position.X * 0.6f);
 
-			if (tiledMap.GetLayer("FarBackground") != null)
-			{
-				renderer.Draw(tiledMap.GetLayer("FarBackground"), Resolution.GetTransformationMatrix());
-			}
-			if (tiledMap.GetLayer("Background") != null)
-			{
-				renderer.Draw(tiledMap.GetLayer("Background"), layerBg);
-			}
-			if (tiledMap.GetLayer("MidBackground") != null)
-			{
-				renderer.Draw(tiledMap.GetLayer("MidBackground"), layerMg);
-			}
-			renderer.Draw(tiledMap.GetLayer("Foreground"), Camera.GetTransformMatrix());
+			//Matrix layerFg = Matrix.CreateTranslation(((Camera.position.X) * 0.1f) - 30, 0, 0) * Camera.GetTransformMatrix();
+			//Matrix layerMg = Matrix.CreateTranslation(((Camera.position.X) * 0.2f)-60, 0, 0) * Camera.GetTransformMatrix();
+			//Matrix layerBg = Matrix.CreateTranslation(parallax - 240, 0, 0) * Camera.GetTransformMatrix();
+
+			//if (tiledMap.GetLayer("FarBackground") != null)
+			//{
+			//	renderer.Draw(tiledMap.GetLayer("FarBackground"), Resolution.GetTransformationMatrix());
+			//}
+			//if (tiledMap.GetLayer("Background") != null)
+			//{
+			//	renderer.Draw(tiledMap.GetLayer("Background"), layerBg);
+			//}
+			//if (tiledMap.GetLayer("MidBackground") != null)
+			//{
+			//	renderer.Draw(tiledMap.GetLayer("MidBackground"), layerMg);
+			//}
+			//if (tiledMap.GetLayer("Foreground 2") != null)
+			//{
+			//	renderer.Draw(tiledMap.GetLayer("Foreground 2"), layerFg);
+			//}
+			//if (tiledMap.GetLayer("Foreground 2") != null)
+			//{
+			//	renderer.Draw(tiledMap.GetLayer("CloseForeground"), Camera.GetTransformMatrix(), null, null, .1f);
+			//}
+			
+			//renderer.Draw(tiledMap.GetLayer("Foreground"), Camera.GetTransformMatrix());
+			
+			renderer.Draw(tiledMap, Camera.GetTransformMatrix());
 		}
-
-		#endregion
 	}
+	#endregion
 }

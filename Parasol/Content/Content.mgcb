@@ -27,11 +27,11 @@
 /processorParam:Quality=Best
 /build:Sounds/Music/J04.mp3
 
-#begin Sounds/sfx/a_attack2.wav
+#begin Sounds/sfx/a_attack.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
 /processorParam:Quality=Best
-/build:Sounds/sfx/a_attack2.wav
+/build:Sounds/sfx/a_attack.wav
 
 #begin Sounds/sfx/a_hurt2.wav
 /importer:WavImporter
@@ -50,6 +50,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Sprites/Collision/s_wall.png
+
+#begin Sprites/Enemies/s_Enemy.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Sprites/Enemies/s_Enemy.png
 
 #begin Sprites/HUD/File.fx
 /importer:EffectImporter
